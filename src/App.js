@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Users, Image, UserPlus, Menu, X, ChevronRight, MapPin, Mail, Phone } from 'lucide-react';
+import { Calendar, Users, Image, UserPlus, Menu, X, ChevronRight, MapPin } from 'lucide-react';
 
 const App = () => {
   const [activeSection, setActiveSection] = useState('home');
@@ -7,15 +7,44 @@ const App = () => {
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
 
   const officeBearers = [
-    { name: 'Rajesh Kumar', position: 'President', phone: '+91 98765 43210', email: 'president@smym.org' },
-    { name: 'Priya Sharma', position: 'Vice President', phone: '+91 98765 43211', email: 'vp@smym.org' },
-    { name: 'Amit Patel', position: 'Secretary', phone: '+91 98765 43212', email: 'secretary@smym.org' },
-    { name: 'Neha Gupta', position: 'Treasurer', phone: '+91 98765 43213', email: 'treasurer@smym.org' }
+    { name: 'Sudarshan Mantri', position: 'President' },
+    { name: 'Hemanth Bhattad', position: 'Vice President' },
+    { name: 'Ketan Bisani', position: 'Vice President' },
+    { name: 'Kushal Maheswari', position: 'Secretary' },
+    { name: 'Mohit Bajaj', position: 'Treasurer' },
+    { name: 'Shubham Sarda', position: 'Joint Secretary' },
+    { name: 'Nikhil Mohta', position: 'Joint Secretary' }
   ];
 
   const executiveMembers = [
-    'Vikram Singh', 'Anjali Desai', 'Rohit Mehta', 'Kavita Jain',
-    'Suresh Kumar', 'Meera Agarwal', 'Arjun Reddy', 'Pooja Verma'
+    { name: 'Madan Mohan Rathi', position: 'IPP' },
+    { name: 'Abhinandan Chandak', position: 'Executive Member' },
+    { name: 'Ankit Rathi', position: 'Executive Member' },
+    { name: 'Arnav Maheshwari', position: 'Executive Member' },
+    { name: 'Arvind Kumar Jetha', position: 'Executive Member' },
+    { name: 'Ashish Maheswari', position: 'Executive Member' },
+    { name: 'Atul Maheswari', position: 'Executive Member' },
+    { name: 'Chirag Jhawar', position: 'Executive Member' },
+    { name: 'Girish Singh Mohta', position: 'Executive Member' },
+    { name: 'Hemanth Bhattad', position: 'Executive Member' },
+    { name: 'Jayesh Bisani', position: 'Executive Member' },
+    { name: 'Jayesh Rathi', position: 'Executive Member' },
+    { name: 'Kirti Suda', position: 'Executive Member' },
+    { name: 'Laksh', position: 'Executive Member' },
+    { name: 'Mahima Rathi', position: 'Executive Member' },
+    { name: 'Saakshi Chandak', position: 'Executive Member' },
+    { name: 'Tapas Bhattad', position: 'Executive Member' },
+    { name: 'Vikramaditya Bisani', position: 'Executive Member' },
+    { name: 'Yash Malpani', position: 'Executive Member' },
+    { name: 'Yashika Malpani', position: 'Executive Member' }
+  ];
+
+  const advisors = [
+    { name: 'Anil Kumar Kela', position: 'Advisor' },
+    { name: 'Jai Prakash Malpani', position: 'Advisor' },
+    { name: 'Praful Mohta', position: 'Advisor' },
+    { name: 'Pramod Sarda', position: 'Advisor' },
+    { name: 'Vinod Dwarkani', position: 'Advisor' }
   ];
 
   const upcomingEvents = [
@@ -47,18 +76,33 @@ const App = () => {
   ];
 
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
-    phone: '',
-    address: '',
-    age: '',
-    occupation: ''
+    membershipStatus: 'New Registration',
+    surname: '',
+    name: '',
+    gender: '',
+    dob: '',
+    qualification: '',
+    occupation: '',
+    fatherName: '',
+    bloodGroup: '',
+    willingToDonate: '',
+    whatsappNumber: '',
+    contactNumber: '',
+    married: ''
   });
 
   const handleSubmit = () => {
-    if (formData.name && formData.email && formData.phone && formData.address && formData.age && formData.occupation) {
+    const requiredFields = ['email', 'surname', 'name', 'gender', 'dob', 'qualification', 'occupation', 'fatherName', 'bloodGroup', 'willingToDonate', 'whatsappNumber', 'contactNumber', 'married'];
+    const allFilled = requiredFields.every(field => formData[field]);
+    
+    if (allFilled) {
       alert('Registration submitted successfully! We will contact you soon.');
-      setFormData({ name: '', email: '', phone: '', address: '', age: '', occupation: '' });
+      setFormData({
+        email: '', membershipStatus: 'New Registration', surname: '', name: '', gender: '', dob: '',
+        qualification: '', occupation: '', fatherName: '', bloodGroup: '', willingToDonate: '',
+        whatsappNumber: '', contactNumber: '', married: ''
+      });
     } else {
       alert('Please fill all required fields');
     }
@@ -79,16 +123,11 @@ const App = () => {
       <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-md z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="/smym-logo-no-bg.png" 
-                alt="SMYM Chennai Logo" 
-                className="w-14 h-14 object-contain"
-              />
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">Shree Maheshwari Yuva Mandal</h1>
-                <p className="text-xs text-gray-600">Chennai</p>
-              </div>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-xl font-bold text-gray-800">Empowering Youth,</h1>
+              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
+                Building Community
+              </span>
             </div>
 
             <nav className="hidden md:flex space-x-6">
@@ -135,12 +174,17 @@ const App = () => {
       <section id="home" className="pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-6">
-              Empowering Youth,<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-                Building Community
-              </span>
+            <img 
+              src="/smym-logo-no-bg.png" 
+              alt="SMYM Chennai Logo" 
+              className="w-32 h-32 md:w-40 md:h-40 object-contain mx-auto mb-6"
+            />
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-800 mb-4">
+              Shree Maheshwari Yuva Mandal
             </h2>
+            <p className="text-2xl font-semibold text-gray-800 mb-6">
+              Chennai
+            </p>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               A vibrant community organization dedicated to youth development and social welfare in Chennai
             </p>
@@ -205,17 +249,7 @@ const App = () => {
                     {bearer.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <h4 className="text-lg font-bold text-center text-gray-800">{bearer.name}</h4>
-                  <p className="text-orange-600 text-center font-semibold mb-3">{bearer.position}</p>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p className="flex items-center justify-center">
-                      <Phone className="w-4 h-4 mr-2" />
-                      {bearer.phone}
-                    </p>
-                    <p className="flex items-center justify-center">
-                      <Mail className="w-4 h-4 mr-2" />
-                      {bearer.email}
-                    </p>
-                  </div>
+                  <p className="text-orange-600 text-center font-semibold">{bearer.position}</p>
                 </div>
               ))}
             </div>
@@ -226,10 +260,32 @@ const App = () => {
               <Users className="mr-2 text-orange-600" />
               Executive Committee Members
             </h3>
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {executiveMembers.map((member, idx) => (
-                <div key={idx} className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-4 text-center hover:shadow-md transition">
-                  <p className="font-semibold text-gray-800">{member}</p>
+                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
+                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+                    {member.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <h4 className="text-lg font-bold text-center text-gray-800">{member.name}</h4>
+                  <p className="text-orange-600 text-center font-semibold">{member.position}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-16">
+            <h3 className="text-2xl font-bold text-gray-800 mb-8 flex items-center">
+              <Users className="mr-2 text-orange-600" />
+              Advisors
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+              {advisors.map((advisor, idx) => (
+                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
+                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+                    {advisor.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <h4 className="text-lg font-bold text-center text-gray-800">{advisor.name}</h4>
+                  <p className="text-orange-600 text-center font-semibold">{advisor.position}</p>
                 </div>
               ))}
             </div>
@@ -335,16 +391,6 @@ const App = () => {
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Full Name *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div>
                 <label className="block text-gray-700 font-semibold mb-2">Email *</label>
                 <input
                   type="email"
@@ -355,45 +401,150 @@ const App = () => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Phone *</label>
+                <label className="block text-gray-700 font-semibold mb-2">Membership Status *</label>
+                <select
+                  value={formData.membershipStatus}
+                  onChange={(e) => setFormData({...formData, membershipStatus: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                >
+                  <option value="New Registration">New Registration</option>
+                  <option value="Old Member Data Updation">Old Member Data Updation</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Surname *</label>
+                <input
+                  type="text"
+                  value={formData.surname}
+                  onChange={(e) => setFormData({...formData, surname: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  placeholder="Enter your surname"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Gender *</label>
+                <select
+                  value={formData.gender}
+                  onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Date of Birth *</label>
+                <input
+                  type="date"
+                  value={formData.dob}
+                  onChange={(e) => setFormData({...formData, dob: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Qualification *</label>
+                <input
+                  type="text"
+                  value={formData.qualification}
+                  onChange={(e) => setFormData({...formData, qualification: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  placeholder="Enter your qualification"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Occupation *</label>
+                <input
+                  type="text"
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({...formData, occupation: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  placeholder="Enter your occupation"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Father Name *</label>
+                <input
+                  type="text"
+                  value={formData.fatherName}
+                  onChange={(e) => setFormData({...formData, fatherName: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  placeholder="Enter father's name"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Blood Group *</label>
+                <select
+                  value={formData.bloodGroup}
+                  onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                >
+                  <option value="">Select Blood Group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="A1+">A1+</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Willing to Donate Blood? *</label>
+                <select
+                  value={formData.willingToDonate}
+                  onChange={(e) => setFormData({...formData, willingToDonate: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">WhatsApp Number *</label>
                 <input
                   type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  value={formData.whatsappNumber}
+                  onChange={(e) => setFormData({...formData, whatsappNumber: e.target.value})}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
                   placeholder="+91 98765 43210"
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">Age *</label>
+                <label className="block text-gray-700 font-semibold mb-2">Contact Number *</label>
                 <input
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) => setFormData({...formData, age: e.target.value})}
+                  type="tel"
+                  value={formData.contactNumber}
+                  onChange={(e) => setFormData({...formData, contactNumber: e.target.value})}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
-                  placeholder="25"
+                  placeholder="+91 98765 43210"
                 />
               </div>
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 font-semibold mb-2">Address *</label>
-              <textarea
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
-                rows="3"
-                placeholder="Enter your complete address"
-              ></textarea>
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 font-semibold mb-2">Occupation *</label>
-              <input
-                type="text"
-                value={formData.occupation}
-                onChange={(e) => setFormData({...formData, occupation: e.target.value})}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
-                placeholder="Student / Professional / Business"
-              />
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">Married *</label>
+                <select
+                  value={formData.married}
+                  onChange={(e) => setFormData({...formData, married: e.target.value})}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none"
+                >
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
             </div>
             <button
               onClick={handleSubmit}
