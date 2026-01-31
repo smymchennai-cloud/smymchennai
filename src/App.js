@@ -8,16 +8,16 @@ const App = () => {
 
   const officeBearers = [
     { name: 'Sudarshan Mantri', position: 'President' },
+    { name: 'Kushal Maheswari', position: 'Secretary' },
     { name: 'Hemanth Bhattad', position: 'Vice President' },
     { name: 'Ketan Bisani', position: 'Vice President' },
-    { name: 'Kushal Maheswari', position: 'Secretary' },
     { name: 'Mohit Bajaj', position: 'Treasurer' },
     { name: 'Shubham Sarda', position: 'Joint Secretary' },
-    { name: 'Nikhil Mohta', position: 'Joint Secretary' }
+    { name: 'Nikhil Mohta', position: 'Joint Secretary' },
+    { name: 'Madan Mohan Rathi', position: 'IPP' }
   ];
 
   const executiveMembers = [
-    { name: 'Madan Mohan Rathi', position: 'IPP' },
     { name: 'Abhinandan Chandak', position: 'Executive Member' },
     { name: 'Ankit Rathi', position: 'Executive Member' },
     { name: 'Arnav Maheshwari', position: 'Executive Member' },
@@ -131,7 +131,7 @@ const App = () => {
             </div>
 
             <nav className="hidden md:flex space-x-6">
-              {['home', 'about', 'team', 'events', 'gallery', 'register'].map((section) => (
+              {['home', 'about', 'events', 'team', 'gallery', 'register'].map((section) => (
                 <button
                   key={section}
                   onClick={() => scrollToSection(section)}
@@ -156,7 +156,7 @@ const App = () => {
 
           {mobileMenuOpen && (
             <nav className="md:hidden mt-4 pb-4 space-y-2">
-              {['home', 'about', 'team', 'events', 'gallery', 'register'].map((section) => (
+              {['home', 'about', 'events', 'team', 'gallery', 'register'].map((section) => (
                 <button
                   key={section}
                   onClick={() => scrollToSection(section)}
@@ -231,6 +231,66 @@ const App = () => {
         </div>
       </section>
 
+      {/* Events Section */}
+      <section id="events" className="py-20 bg-gray-50 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">Events</h2>
+
+          <div className="mb-16">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+              <Calendar className="mr-2 text-orange-600" />
+              Upcoming Events
+            </h3>
+            {upcomingEvents.map((event) => (
+              <div key={event.id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+                <div className="relative z-10">
+                  <div className="inline-block bg-white/20 px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                    {event.status}
+                  </div>
+                  <h4 className="text-4xl font-bold mb-4">{event.name}</h4>
+                  <p className="text-xl mb-6">{event.description}</p>
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="flex items-center">
+                      <Calendar className="mr-2" />
+                      <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="mr-2">🕐</span>
+                      <span>{event.time}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="mr-2" />
+                      <span>{event.venue}</span>
+                    </div>
+                  </div>
+                  <button className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-orange-50 transition flex items-center">
+                    Register Now
+                    <ChevronRight className="ml-2" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+              <Calendar className="mr-2 text-orange-600" />
+              Past Events
+            </h3>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {pastEvents.map((event, idx) => (
+                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
+                  <h4 className="font-bold text-gray-800 mb-2">{event.name}</h4>
+                  <p className="text-sm text-gray-600 mb-1">{new Date(event.date).toLocaleDateString('en-IN')}</p>
+                  <p className="text-sm text-orange-600 font-semibold">{event.attendees} Attendees</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Team Section */}
       <section id="team" className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
@@ -286,66 +346,6 @@ const App = () => {
                   </div>
                   <h4 className="text-lg font-bold text-center text-gray-800">{advisor.name}</h4>
                   <p className="text-orange-600 text-center font-semibold">{advisor.position}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Events Section */}
-      <section id="events" className="py-20 bg-gray-50 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-800 mb-12">Events</h2>
-
-          <div className="mb-16">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Calendar className="mr-2 text-orange-600" />
-              Upcoming Events
-            </h3>
-            {upcomingEvents.map((event) => (
-              <div key={event.id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                <div className="relative z-10">
-                  <div className="inline-block bg-white/20 px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                    {event.status}
-                  </div>
-                  <h4 className="text-4xl font-bold mb-4">{event.name}</h4>
-                  <p className="text-xl mb-6">{event.description}</p>
-                  <div className="grid md:grid-cols-3 gap-4 mb-6">
-                    <div className="flex items-center">
-                      <Calendar className="mr-2" />
-                      <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="mr-2">🕐</span>
-                      <span>{event.time}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="mr-2" />
-                      <span>{event.venue}</span>
-                    </div>
-                  </div>
-                  <button className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-orange-50 transition flex items-center">
-                    Register Now
-                    <ChevronRight className="ml-2" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Calendar className="mr-2 text-orange-600" />
-              Past Events
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {pastEvents.map((event, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition">
-                  <h4 className="font-bold text-gray-800 mb-2">{event.name}</h4>
-                  <p className="text-sm text-gray-600 mb-1">{new Date(event.date).toLocaleDateString('en-IN')}</p>
-                  <p className="text-sm text-orange-600 font-semibold">{event.attendees} Attendees</p>
                 </div>
               ))}
             </div>
