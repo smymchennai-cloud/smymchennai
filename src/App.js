@@ -80,6 +80,7 @@ const App = () => {
     membershipStatus: 'New Registration',
     surname: '',
     name: '',
+    photo: null,
     gender: '',
     dob: '',
     qualification: '',
@@ -99,7 +100,7 @@ const App = () => {
     if (allFilled) {
       alert('Registration submitted successfully! We will contact you soon.');
       setFormData({
-        email: '', membershipStatus: 'New Registration', surname: '', name: '', gender: '', dob: '',
+        email: '', membershipStatus: 'New Registration', surname: '', name: '', photo: null, gender: '', dob: '',
         qualification: '', occupation: '', fatherName: '', bloodGroup: '', willingToDonate: '',
         whatsappNumber: '', contactNumber: '', married: ''
       });
@@ -432,6 +433,20 @@ const App = () => {
                 />
               </div>
               <div>
+                <label className="block text-gray-700 font-semibold mb-2">Current Photo</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFormData({...formData, photo: e.target.files[0]})}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-100 file:text-orange-600 file:font-semibold hover:file:bg-orange-200 file:cursor-pointer"
+                  />
+                  {formData.photo && (
+                    <p className="text-sm text-green-600 mt-1">✓ {formData.photo.name}</p>
+                  )}
+                </div>
+              </div>
+              <div>
                 <label className="block text-gray-700 font-semibold mb-2">Gender *</label>
                 <select
                   value={formData.gender}
@@ -561,9 +576,11 @@ const App = () => {
       <footer className="bg-gray-900 text-white py-12 px-4">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">SM</span>
-            </div>
+            <img 
+              src="/smym-logo-no-bg.png" 
+              alt="SMYM Chennai Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <div className="text-left">
               <h3 className="font-bold">Shree Maheshwari Yuva Mandal</h3>
               <p className="text-sm text-gray-400">Chennai</p>
@@ -571,10 +588,8 @@ const App = () => {
           </div>
           <p className="text-gray-400 mb-4">Empowering Youth, Building Community</p>
           <div className="flex justify-center space-x-6 mb-6">
-            <button className="hover:text-orange-500 transition">Facebook</button>
-            <button className="hover:text-orange-500 transition">Instagram</button>
-            <button className="hover:text-orange-500 transition">Twitter</button>
-            <button className="hover:text-orange-500 transition">LinkedIn</button>
+            <a href="https://www.facebook.com/share/1AV57yUmYX/" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition">Facebook</a>
+            <a href="https://www.instagram.com/smymchennai?igsh=NGZxcjRkZ2NhNDA2" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition">Instagram</a>
           </div>
           <p className="text-gray-500 text-sm">© 2026 Shree Maheshwari Yuva Mandal. All rights reserved.</p>
         </div>
