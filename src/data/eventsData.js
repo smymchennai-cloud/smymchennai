@@ -37,7 +37,7 @@ export const upcomingEvents = [
     time: 'TBA',
     venue: 'TBA',
     description: 'Annual General Meeting - Review, reflect, and plan ahead',
-    status: 'Save the Date',
+    status: 'Coming Soon',
     flyer: null
   },
   {
@@ -47,7 +47,7 @@ export const upcomingEvents = [
     time: 'TBA',
     venue: 'TBA',
     description: 'Annual cultural extravaganza celebrating youth talent and community spirit',
-    status: 'Coming Soon',
+    status: 'Save the Date',
     flyer: null
   }
 ];

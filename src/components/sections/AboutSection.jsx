@@ -8,20 +8,12 @@ const AboutSection = () => {
         <div className="text-center mb-12">
           <Users className="w-16 h-16 text-orange-600 mx-auto mb-4" />
           <h2 className="text-4xl font-bold text-gray-800 mb-4">About Us</h2>
-          <p className="text-gray-600">Building a stronger community through unity and purpose</p>
         </div>
         
         <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 shadow-lg">
-          <h3 className="text-3xl font-bold text-gray-800 mb-6">Our Journey</h3>
-          <div className="prose prose-lg text-gray-600 space-y-4 text-justify">
+          <div className="prose prose-lg text-gray-600 text-justify">
             <p>
-              Founded in 1985, Shree Maheshwari Yuva Mandal, Chennai has been a cornerstone of the Maheshwari community in Chennai for over three decades. What began as a small gathering of passionate young individuals has blossomed into a thriving organization with over 1100 active members.
-            </p>
-            <p>
-              Our mission has always been clear: to nurture young talent, preserve our rich cultural heritage, and contribute meaningfully to society. Through countless cultural programs, educational initiatives, and social welfare activities, we have touched thousands of lives and created lasting impact.
-            </p>
-            <p>
-              Today, we stand as one of the most vibrant youth organizations in Chennai, continuing to inspire, connect, and empower the next generation of leaders.
+              Founded in 1980 as the Maheshwari Youth Club, Shree Maheshwari Yuva Mandal received formal recognition in 1985 from Shree Maheshwari Sabha, Chennai, as the official youth association of the Maheshwari community. What began as a small collective of committed youngsters has since grown into a structured and vibrant platform focused on youth engagement, cultural continuity, and community service.
             </p>
           </div>
           

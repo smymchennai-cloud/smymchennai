@@ -22,13 +22,20 @@ const MemberCard = ({ member, size = 'normal' }) => {
   return (
     <div className={sizeClasses[size]}>
       {member.photo ? (
-        <img 
-          src={member.photo} 
-          alt={member.name}
-          className={`${size === 'normal' ? 'w-20 h-20' : 'w-14 h-14'} rounded-full mx-auto mb-4 object-cover border-2 border-orange-400`}
-        />
+        <div className={`${size === 'normal' ? 'w-24 h-24' : 'w-16 h-16'} rounded-full mx-auto mb-4 border-2 border-orange-400 overflow-hidden bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center`}>
+          <img 
+            src={member.photo} 
+            alt={member.name}
+            className="w-full h-full object-cover"
+            style={{ objectPosition: member.photoPosition || 'center' }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.parentElement.innerHTML = `<span class="text-orange-600 text-xl font-bold">${member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</span>`;
+            }}
+          />
+        </div>
       ) : (
-        <div className={`${size === 'normal' ? 'w-20 h-20' : 'w-14 h-14'} bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center`}>
+        <div className={`${size === 'normal' ? 'w-24 h-24' : 'w-16 h-16'} bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center`}>
           <span className="text-white text-xl font-bold">
             {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
           </span>
