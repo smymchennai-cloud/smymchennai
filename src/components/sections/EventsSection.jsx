@@ -138,15 +138,32 @@ const EventsSection = ({
             <Calendar className="mr-2 text-amber-700" />
             Past Events
           </h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pastEvents.map((event, idx) => (
               <div 
                 key={idx} 
-                className="bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-700 rounded-xl shadow-lg p-6 hover:shadow-xl transition"
+                className="bg-gradient-to-br from-amber-50 to-amber-100 border-l-4 border-amber-700 rounded-xl shadow-lg p-5 hover:shadow-xl transition"
               >
                 <h4 className="font-bold text-gray-800 mb-2">{event.name}</h4>
-                <p className="text-sm text-gray-600 mb-1">{new Date(event.date).toLocaleDateString('en-IN')}</p>
-                <p className="text-sm text-amber-700 font-semibold">{event.attendees} Attendees</p>
+                <p className="text-xs text-gray-500 mb-2">
+                  {new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
+                {event.description && (
+                  <p className="text-sm text-gray-600 mb-3">{event.description}</p>
+                )}
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-amber-700 font-semibold">{event.attendees} Participants</span>
+                </div>
+                {event.coordinator && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    <span className="font-medium">Coordinator:</span> {event.coordinator}
+                  </p>
+                )}
+                {event.specialMention && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    <span className="font-medium">Special Mention:</span> {event.specialMention}
+                  </p>
+                )}
               </div>
             ))}
           </div>
