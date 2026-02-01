@@ -50,12 +50,48 @@ const App = () => {
   const upcomingEvents = [
     {
       id: 1,
+      name: 'Neel aur Neer',
+      date: '2026-02-15',
+      time: '5:30 AM',
+      venue: 'Kilpauk, Chennai',
+      description: '3 Kms Jog / Walk with Ice Bath. Age group: 18 to 40 years',
+      status: 'Coming Soon'
+    },
+    {
+      id: 2,
+      name: 'Turtle Trail',
+      date: '2026-02-21',
+      time: '11:00 PM - 5:00 AM',
+      venue: 'Besant Nagar Beach',
+      description: 'Nature trail and conservation awareness event. Age group: 18 to 40 years',
+      status: 'Registrations Closed'
+    },
+    {
+      id: 3,
+      name: 'Quietly Powerful',
+      date: '2026-03-08',
+      time: 'TBA',
+      venue: 'TBA',
+      description: 'Special event celebrating International Women\'s Day',
+      status: 'Coming Soon'
+    },
+    {
+      id: 4,
+      name: 'AGM',
+      date: '2026-04-12',
+      time: 'TBA',
+      venue: 'TBA',
+      description: 'Annual General Meeting - Review, reflect, and plan ahead',
+      status: 'Save the Date'
+    },
+    {
+      id: 5,
       name: 'Bulandi 2026',
-      date: '2026-03-15',
-      time: '6:00 PM',
-      venue: 'Chennai Convention Centre',
+      date: '2026-07-01',
+      time: 'TBA',
+      venue: 'TBA',
       description: 'Annual cultural extravaganza celebrating youth talent and community spirit',
-      status: 'Registrations Open'
+      status: 'Coming Soon'
     }
   ];
 
@@ -243,10 +279,21 @@ const App = () => {
               Upcoming Events
             </h3>
             {upcomingEvents.map((event) => (
-              <div key={event.id} className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden">
+              <div 
+                key={event.id} 
+                className={`rounded-2xl shadow-2xl p-8 text-white relative overflow-hidden mb-6 ${
+                  event.status === 'Registrations Closed' 
+                    ? 'bg-gradient-to-r from-gray-500 to-gray-700' 
+                    : 'bg-gradient-to-r from-orange-500 to-red-600'
+                }`}
+              >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
                 <div className="relative z-10">
-                  <div className="inline-block bg-white/20 px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                  <div className={`inline-block px-4 py-1 rounded-full text-sm font-semibold mb-4 ${
+                    event.status === 'Registrations Closed' 
+                      ? 'bg-red-500/80' 
+                      : 'bg-white/20'
+                  }`}>
                     {event.status}
                   </div>
                   <h4 className="text-4xl font-bold mb-4">{event.name}</h4>
@@ -265,10 +312,12 @@ const App = () => {
                       <span>{event.venue}</span>
                     </div>
                   </div>
-                  <button className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-orange-50 transition flex items-center">
-                    Register Now
-                    <ChevronRight className="ml-2" />
-                  </button>
+                  {event.status !== 'Registrations Closed' && (
+                    <button className="bg-white text-orange-600 px-8 py-3 rounded-full font-bold hover:bg-orange-50 transition flex items-center">
+                      Register Now
+                      <ChevronRight className="ml-2" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
