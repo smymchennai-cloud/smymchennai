@@ -43,7 +43,7 @@ export const upcomingEvents = [
   {
     id: 5,
     name: 'Bulandi 2026',
-    date: '2026-07-01',
+    date: '2026-07-26',
     time: 'TBA',
     venue: 'TBA',
     description: 'Annual cultural extravaganza celebrating youth talent and community spirit',
