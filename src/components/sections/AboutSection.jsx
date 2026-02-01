@@ -23,11 +23,11 @@ const AboutSection = () => {
               <div className="text-gray-600">Members</div>
             </div>
             <div className="text-center p-4 bg-white rounded-xl shadow">
-              <div className="text-3xl font-bold text-orange-600">39</div>
+              <div className="text-3xl font-bold text-orange-600">46</div>
               <div className="text-gray-600">Years</div>
             </div>
             <div className="text-center p-4 bg-white rounded-xl shadow">
-              <div className="text-3xl font-bold text-orange-600">12+</div>
+              <div className="text-3xl font-bold text-orange-600">10+</div>
               <div className="text-gray-600 text-sm">Events (Last 12 Months)</div>
             </div>
             <div className="text-center p-4 bg-white rounded-xl shadow">

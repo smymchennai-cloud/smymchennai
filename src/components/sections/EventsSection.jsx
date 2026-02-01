@@ -79,39 +79,41 @@ const EventsSection = ({
                   key={event.id} 
                   className={`rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition ${statusStyle.card}`}
                 >
-                  <div className={`p-6 ${statusStyle.opacity}`}>
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="font-bold text-xl text-gray-800">{event.name}</h4>
-                      <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusStyle.badge}`}>
-                        {event.status}
-                      </span>
-                    </div>
-                    <div className="space-y-2 text-gray-600 text-sm">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span>{new Date(event.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  <div className="p-6">
+                    <div className={statusStyle.opacity}>
+                      <div className="flex justify-between items-start mb-3">
+                        <h4 className="font-bold text-xl text-gray-800">{event.name}</h4>
+                        <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusStyle.badge}`}>
+                          {event.status}
+                        </span>
                       </div>
-                      {event.time && (
+                      <div className="space-y-2 text-gray-600 text-sm">
                         <div className="flex items-center">
-                          <span className="w-4 h-4 mr-2 text-center">🕐</span>
-                          <span>{event.time}</span>
+                          <Calendar className="w-4 h-4 mr-2" />
+                          <span>{new Date(event.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
-                      )}
-                      {event.venue && (
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          <span>{event.venue}</span>
-                        </div>
-                      )}
-                      {event.description && (
-                        <p className="text-gray-500 mt-2">{event.description}</p>
-                      )}
+                        {event.time && (
+                          <div className="flex items-center">
+                            <span className="w-4 h-4 mr-2 text-center">🕐</span>
+                            <span>{event.time}</span>
+                          </div>
+                        )}
+                        {event.venue && (
+                          <div className="flex items-center">
+                            <MapPin className="w-4 h-4 mr-2" />
+                            <span>{event.venue}</span>
+                          </div>
+                        )}
+                        {event.description && (
+                          <p className="text-gray-500 mt-2">{event.description}</p>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-4 flex gap-2">
                       {event.flyer && (
                         <button
                           onClick={() => onViewFlyer(event)}
-                          className="flex-1 bg-white/80 text-gray-700 py-2 rounded-lg font-semibold hover:bg-white transition text-sm"
+                          className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm"
                         >
                           View Details
                         </button>
