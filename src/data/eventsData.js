@@ -28,7 +28,7 @@ export const upcomingEvents = [
     venue: 'TBA',
     description: 'Special event celebrating International Women\'s Day',
     status: 'Coming Soon',
-    flyer: null
+    flyer: '/quietly-powerful.png'
   },
   {
     id: 4,
