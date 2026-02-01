@@ -303,14 +303,14 @@ const App = () => {
               <Users className="mr-2 text-orange-600" />
               Office Bearers
             </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {officeBearers.map((bearer, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+                <div key={idx} className="bg-white rounded-xl shadow-lg p-4 md:p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center text-white text-xl md:text-2xl font-bold">
                     {bearer.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <h4 className="text-lg font-bold text-center text-gray-800">{bearer.name}</h4>
-                  <p className="text-orange-600 text-center font-semibold">{bearer.position}</p>
+                  <h4 className="text-sm md:text-lg font-bold text-center text-gray-800">{bearer.name}</h4>
+                  <p className="text-orange-600 text-center font-semibold text-xs md:text-base">{bearer.position}</p>
                 </div>
               ))}
             </div>
@@ -321,14 +321,14 @@ const App = () => {
               <Users className="mr-2 text-orange-600" />
               Executive Committee Members
             </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {executiveMembers.map((member, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+                <div key={idx} className="bg-white rounded-xl shadow-lg p-4 md:p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center text-white text-xl md:text-2xl font-bold">
                     {member.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <h4 className="text-lg font-bold text-center text-gray-800">{member.name}</h4>
-                  <p className="text-orange-600 text-center font-semibold">{member.position}</p>
+                  <h4 className="text-sm md:text-lg font-bold text-center text-gray-800">{member.name}</h4>
+                  <p className="text-orange-600 text-center font-semibold text-xs md:text-base">{member.position}</p>
                 </div>
               ))}
             </div>
@@ -339,14 +339,14 @@ const App = () => {
               <Users className="mr-2 text-orange-600" />
               Advisors
             </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
               {advisors.map((advisor, idx) => (
-                <div key={idx} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold">
+                <div key={idx} className="bg-white rounded-xl shadow-lg p-4 md:p-6 hover:shadow-2xl transition-all hover:-translate-y-1">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mx-auto mb-3 md:mb-4 flex items-center justify-center text-white text-xl md:text-2xl font-bold">
                     {advisor.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                  <h4 className="text-lg font-bold text-center text-gray-800">{advisor.name}</h4>
-                  <p className="text-orange-600 text-center font-semibold">{advisor.position}</p>
+                  <h4 className="text-sm md:text-lg font-bold text-center text-gray-800">{advisor.name}</h4>
+                  <p className="text-orange-600 text-center font-semibold text-xs md:text-base">{advisor.position}</p>
                 </div>
               ))}
             </div>
