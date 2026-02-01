@@ -1,6 +1,6 @@
 // Office Bearers
 export const officeBearers = [
-  { name: 'Sudarshan Mantri', position: 'President' },
+  { name: 'Sudarshan Mantri', position: 'President', photo: '/sudharshan.png' },
   { name: 'Kushal Maheswari', position: 'Secretary', photo: '/kushal.png' },
   { name: 'Hemanth Bhattad', position: 'Vice President' },
   { name: 'Ketan Bisani', position: 'Vice President' },

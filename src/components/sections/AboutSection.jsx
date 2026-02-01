@@ -13,7 +13,7 @@ const AboutSection = () => {
         
         <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 shadow-lg">
           <h3 className="text-3xl font-bold text-gray-800 mb-6">Our Journey</h3>
-          <div className="prose prose-lg text-gray-600 space-y-4">
+          <div className="prose prose-lg text-gray-600 space-y-4 text-justify">
             <p>
               Founded in 1985, Shree Maheshwari Yuva Mandal, Chennai has been a cornerstone of the Maheshwari community in Chennai for over three decades. What began as a small gathering of passionate young individuals has blossomed into a thriving organization with over 1100 active members.
             </p>
