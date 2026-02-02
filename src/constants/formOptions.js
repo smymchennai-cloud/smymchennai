@@ -48,7 +48,7 @@ export const PARTICIPANT_COUNT_OPTIONS = [
 ];
 
 // Navigation items
-export const NAV_ITEMS = ['home', 'about', 'events', 'team', 'gallery', 'register'];
+export const NAV_ITEMS = ['home', 'about', 'events', 'team', 'gallery', 'register', 'contact'];
 
 // Bank details for payment
 export const BANK_DETAILS = {

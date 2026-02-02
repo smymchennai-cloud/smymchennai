@@ -33,7 +33,7 @@ export const upcomingEvents = [
   {
     id: 4,
     name: 'AGM',
-    date: '2026-04-12',
+    date: '2026-04-05',
     time: 'TBA',
     venue: 'TBA',
     description: 'Annual General Meeting - Review, reflect, and plan ahead',
@@ -55,10 +55,32 @@ export const upcomingEvents = [
 // Past Events
 export const pastEvents = [
   { 
+    name: 'Temple Run', 
+    date: '2026-01-25', 
+    attendees: 61,
+    description: 'A unique heritage walk visiting 3 temples early morning for Darshan and knowing about the history of the temples, their significance, about the architecture. Temples covered in edition 1 were Sri Kapaleeswarar Temple, Sri Parthasarathy Temple & RK Math.',
+    coordinator: 'Chirag Jhawar & Abhinandan Chandak'
+  },
+  { 
+    name: 'Shree Maheshwari Annakut Mahotsav', 
+    date: '2025-10-26', 
+    attendees: '800+',
+    description: 'SMYM along with Shree Maheshwari Satsang Samiti, Shree Maheshwari Mahila Mandal, Chennai organised Annakut Mahotsav for the entire Vaishnav Samaj in Chennai.',
+    coordinator: 'Kriti Suda & Nikhil Mohta',
+    specialMention: 'Event Chairperson Shri Narayandas J Rathi'
+  },
+  { 
+    name: 'Utkarsh', 
+    date: '2025-10-05', 
+    attendees: '250+',
+    description: 'SMYM\'s Diwali Milan event which saw felicitation of SMYM\'s Past President & Secretary and recognition of NextGen Superstar participants & winners. The latter also presented their Finale acts on stage and enthralled the audience.',
+    coordinator: 'Ankit Rathi & Ketan Bisani'
+  },
+  { 
     name: 'Mission ISRO', 
     date: '2025-09-25', 
     attendees: 45,
-    description: 'A flagship event visiting NRSC Hyderabad - Space as Career opportunity',
+    description: 'A flagship event organised by SMYM for youth and children, visiting NRSC Hyderabad with an objective to Space as Career opportunity.',
     coordinator: 'Atul Maheshwari',
     specialMention: 'Shri Harish Sarda'
   },
@@ -80,8 +102,14 @@ export const pastEvents = [
     name: 'Hasyam', 
     date: '2025-08-31', 
     attendees: 52,
-    description: 'A humor poetry symposium held at Chinmaya Heritage Center, Chetpet',
+    description: 'Associated Partner for Hasyam, a humor poetry symposium held at Chinmaya Heritage Center, Chetpet',
     coordinator: 'Girish Singh Mohta'
+  },
+  { 
+    name: 'Nextgen Superstar, Hyderabad', 
+    date: '2025-08-22', 
+    attendees: 25,
+    description: 'SMYM\'s selected team represented TKPPMYS at the All India Culturals, held at Hyderabad. SMYM was instrumental in organising, training and mentoring the participants along with their enthusiastic parents. We garnered 14 finalists from a team of 25 participants, and got podium finish in 7 events at the Nationals.'
   },
   { 
     name: 'Movie with SMYM - War 2', 
@@ -94,7 +122,7 @@ export const pastEvents = [
     name: 'Nextgen Superstar – Tayyari Jeet Ki', 
     date: '2025-06-29', 
     attendees: 75,
-    description: 'TKPPMYS Prelims at Agarwal Vidyalaya, Chennai',
+    description: 'SMYM hosted TKPPMYS Prelims at Agarwal Vidyalaya, Chennai with an objective to select team representing TKPPMYS at All India culturals, Nextgen Super star.',
     specialMention: 'Sponsor Shri Kundanlal Jethmal Anand Chandak (Lathiwale)'
   }
 ];
