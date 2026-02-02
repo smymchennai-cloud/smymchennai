@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import { ChevronRight, CheckCircle, X, PartyPopper } from 'lucide-react';
 import { 
   validatePhone, 
   validateEmail, 
@@ -16,7 +17,88 @@ import {
   KIDS_COUNT_OPTIONS 
 } from '../../constants/formOptions';
 
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxjTT0_f5xwSinJxkuQoDsTd9m3giXf-MjziisL1S-LuXAD57zWb9fwJAfes3N-DmR8/exec';
+
+// Helper function to convert file to Base64
+const convertFileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// Success Modal Component - Uses Portal to render at document body
+const SuccessModal = ({ isOpen, onClose, registrantName }) => {
+  if (!isOpen) return null;
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ margin: 0 }}>
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm backdrop-animate-in"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden modal-animate-in mx-auto">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition z-10"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Success gradient header */}
+        <div className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 p-8 text-center">
+          <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center shadow-lg mb-4">
+            <CheckCircle className="w-12 h-12 text-green-500" />
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <PartyPopper className="w-6 h-6 text-yellow-300" />
+            <h2 className="text-2xl font-bold text-white">Registration Successful!</h2>
+            <PartyPopper className="w-6 h-6 text-yellow-300 scale-x-[-1]" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 text-center">
+          <p className="text-gray-700 text-lg mb-2">
+            Welcome to SMYM, <span className="font-semibold text-orange-600">{registrantName}</span>!
+          </p>
+          <p className="text-gray-600 mb-4">
+            Your membership registration has been submitted successfully.
+          </p>
+          
+          <div className="bg-orange-50 rounded-xl p-4 mb-6 border border-orange-100">
+            <p className="text-sm text-orange-700">
+              <span className="font-semibold">📧 What's Next:</span> Our team will review your application and contact you soon.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={onClose}
+              className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition shadow-md hover:shadow-lg"
+            >
+              Done
+            </button>
+            <p className="text-xs text-gray-400">
+              Thank you for joining SMYM Chennai! 🙏
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 const MemberRegistrationForm = () => {
+  const photoInputRef = useRef(null);
+  
   const [formData, setFormData] = useState({
     membershipStatus: 'New Registration',
     surname: '',
@@ -68,6 +150,9 @@ const MemberRegistrationForm = () => {
   const [formTouched, setFormTouched] = useState({});
   const [kidsTouched, setKidsTouched] = useState([]);
   const [photoError, setPhotoError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submittedName, setSubmittedName] = useState('');
 
   const markFormFieldTouched = (field) => {
     setFormTouched(prev => ({ ...prev, [field]: true }));
@@ -186,14 +271,7 @@ const MemberRegistrationForm = () => {
     return true;
   };
 
-  const handleSubmit = () => {
-    if (!isFormValid()) {
-      alert('Please fill all required fields correctly');
-      return;
-    }
-    
-    alert('Registration submitted successfully! We will contact you soon.');
-    // Reset form
+  const resetForm = () => {
     setFormData({
       membershipStatus: 'New Registration', surname: '', name: '', photo: null, gender: '', dob: '',
       qualification: '', occupation: '', fatherName: '', bloodGroup: '', willingToDonate: '', married: '',
@@ -206,6 +284,103 @@ const MemberRegistrationForm = () => {
     setFieldErrors({ whatsappNumber: '', contactNumber: '', spousePhone: '', contactEmail: '' });
     setFormTouched({});
     setKidsTouched([]);
+    setPhotoError('');
+    
+    // Reset file input
+    if (photoInputRef.current) {
+      photoInputRef.current.value = '';
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!isFormValid()) {
+      alert('Please fill all required fields correctly');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Convert photo to Base64
+      let base64Photo = '';
+      let photoName = '';
+      
+      if (formData.photo) {
+        base64Photo = await convertFileToBase64(formData.photo);
+        photoName = formData.photo.name;
+      }
+
+      // Prepare data for Google Sheets - matching the columns
+      const sheetData = {
+        timestamp: new Date().toISOString(),
+        membershipStatus: formData.membershipStatus,
+        surname: formData.surname,
+        name: formData.name,
+        photo: base64Photo,
+        photoName: photoName,
+        gender: formData.gender,
+        dob: formData.dob,
+        qualification: formData.qualification,
+        occupation: formData.occupation,
+        fatherName: formData.fatherName,
+        bloodGroup: formData.bloodGroup,
+        willingToDonate: formData.willingToDonate,
+        whatsappNumber: formData.whatsappNumber,
+        contactNumber: formData.contactNumber,
+        married: formData.married,
+        dateOfMarriage: formData.dateOfMarriage || '',
+        spouseName: formData.spouseName || '',
+        spousePhone: formData.spousePhone || '',
+        spouseDob: formData.spouseDob || '',
+        spouseQualification: formData.spouseQualification || '',
+        spouseBloodGroup: formData.spouseBloodGroup || '',
+        isSpouseMember: formData.isSpouseMember || '',
+        hasKids: formData.numberOfKids !== '0' ? 'Yes' : 'No',
+        kid1Name: formData.kids[0]?.name || '',
+        kid1Dob: formData.kids[0]?.dob || '',
+        kid1BloodGroup: formData.kids[0]?.bloodGroup || '',
+        kid2Name: formData.kids[1]?.name || '',
+        kid2Dob: formData.kids[1]?.dob || '',
+        kid2BloodGroup: formData.kids[1]?.bloodGroup || '',
+        kid3Name: formData.kids[2]?.name || '',
+        kid3Dob: formData.kids[2]?.dob || '',
+        kid3BloodGroup: formData.kids[2]?.bloodGroup || '',
+        contactEmail: formData.contactEmail,
+        addressResi: formData.addressResi,
+        phoneLandline: formData.phoneLandline || '',
+        addressOffice: formData.addressOffice || '',
+        phoneOffice: formData.phoneOffice || '',
+        hobbies: formData.hobbies || '',
+        isMaheshwariSabhaMember: formData.isMaheshwariSabhaMember,
+        isOtherClubMember: formData.isOtherClubMember,
+        otherClubNames: formData.otherClubNames || '',
+      };
+
+      // Submit to Google Apps Script
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sheetData),
+      });
+
+      // Store name before resetting
+      setSubmittedName(`${formData.name} ${formData.surname}`);
+      
+      // Show success modal
+      setShowSuccessModal(true);
+      
+      // Reset form
+      resetForm();
+      
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('There was an error submitting your registration. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Render helper for input with validation
@@ -276,6 +451,7 @@ const MemberRegistrationForm = () => {
         <div>
           <label className="block text-gray-700 font-semibold mb-2">Current Photo * <span className="text-xs font-normal text-gray-500">(Max 10 MB)</span></label>
           <input
+            ref={photoInputRef}
             type="file"
             accept="image/*"
             onChange={handlePhotoUpload}
@@ -680,16 +856,35 @@ const MemberRegistrationForm = () => {
       {/* Submit Button */}
       <button
         onClick={handleSubmit}
-        disabled={!isFormValid()}
+        disabled={!isFormValid() || isSubmitting}
         className={`w-full mt-6 py-4 rounded-lg font-bold text-lg transition flex items-center justify-center ${
-          isFormValid()
+          isFormValid() && !isSubmitting
             ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 cursor-pointer'
             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
         }`}
       >
-        Submit Registration
-        <ChevronRight className="ml-2" />
+        {isSubmitting ? (
+          <span className="flex items-center justify-center">
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Submitting...
+          </span>
+        ) : (
+          <>
+            Submit Registration
+            <ChevronRight className="ml-2" />
+          </>
+        )}
       </button>
+
+      {/* Success Modal */}
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        registrantName={submittedName}
+      />
     </div>
   );
 };
