@@ -1,16 +1,107 @@
-import React, { useState } from 'react';
-import { isValidMobile, isValidAge } from '../../utils/validators';
+import React, { useState, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import { isValidMobile, isValidAge, isValidEmail } from '../../utils/validators';
 import { BANK_DETAILS, YES_NO_OPTIONS, PARTICIPANT_COUNT_OPTIONS } from '../../constants/formOptions';
+import { CheckCircle, X, PartyPopper } from 'lucide-react';
+
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4PA4qYx979f9y7ZSB99HmLDeS1Yk9iuDhrPFE-G2NIST-sL_VbzHSzgjBiJigY6nW/exec';
+
+// Helper function to convert file to Base64
+const convertFileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+// Success Modal Component - Uses Portal to render at document body
+const SuccessModal = ({ isOpen, onClose, registrantName }) => {
+  if (!isOpen) return null;
+
+  // Render modal in a portal at the document body level for true centering
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ margin: 0 }}>
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm backdrop-animate-in"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden modal-animate-in mx-auto">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition z-10"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Success gradient header */}
+        <div className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 p-8 text-center">
+          <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center shadow-lg mb-4">
+            <CheckCircle className="w-12 h-12 text-green-500" />
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <PartyPopper className="w-6 h-6 text-yellow-300" />
+            <h2 className="text-2xl font-bold text-white">Registration Successful!</h2>
+            <PartyPopper className="w-6 h-6 text-yellow-300 scale-x-[-1]" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 text-center">
+          <p className="text-gray-700 text-lg mb-2">
+            Thank you, <span className="font-semibold text-orange-600">{registrantName}</span>!
+          </p>
+          <p className="text-gray-600 mb-4">
+            Your registration has been submitted successfully along with your payment screenshot.
+          </p>
+          
+          <div className="bg-orange-50 rounded-xl p-4 mb-6 border border-orange-100">
+            <p className="text-sm text-orange-700">
+              <span className="font-semibold">📧 Confirmation:</span> You will receive updates on your registered email address.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              onClick={onClose}
+              className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition shadow-md hover:shadow-lg"
+            >
+              Done
+            </button>
+            <p className="text-xs text-gray-400">
+              We look forward to seeing you at the event! 🎉
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+};
 
 const EventRegistrationForm = () => {
+  const fileInputRef = useRef(null);
+  
   const [eventRegData, setEventRegData] = useState({
+    email: '',
     fullName: '',
     numberOfParticipants: '1',
     participants: [{ name: '', age: '', isMember: '', mobile: '' }],
     paymentScreenshot: null
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submittedName, setSubmittedName] = useState('');
+
   const [eventRegTouched, setEventRegTouched] = useState({
+    email: false,
     fullName: false,
     participants: [{ name: false, age: false, isMember: false, mobile: false }]
   });
@@ -55,7 +146,13 @@ const EventRegistrationForm = () => {
     setEventRegData({ ...eventRegData, participants: newParticipants });
   };
 
-  const handleEventRegistrationSubmit = () => {
+  const handleEventRegistrationSubmit = async () => {
+    // Validate email
+    if (!eventRegData.email || !isValidEmail(eventRegData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
     if (!eventRegData.fullName) {
       alert('Please enter your full name');
       return;
@@ -76,25 +173,113 @@ const EventRegistrationForm = () => {
         return;
       }
     }
-    
-    let summary = `Registration Details:\n\nFull Name: ${eventRegData.fullName}\nNumber of Participants: ${eventRegData.numberOfParticipants}\n\n`;
-    
-    eventRegData.participants.forEach((p, idx) => {
-      summary += `Participant ${idx + 1}:\n`;
-      summary += `  Name: ${p.name}\n`;
-      summary += `  Age: ${p.age}\n`;
-      summary += `  SMYM Member: ${p.isMember}\n`;
-      summary += `  Mobile: ${p.mobile}\n\n`;
-    });
-    
-    summary += 'You will now be redirected to the Google Form.\nPlease fill the same details and upload your payment screenshot there.';
-    
-    alert(summary);
-    window.open('https://forms.gle/FE3hWS4FeEGGg8ox7', '_blank');
+
+    // Validate payment screenshot
+    if (!eventRegData.paymentScreenshot) {
+      alert('Please upload your payment screenshot');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      // Convert image to Base64
+      let base64Image = '';
+      let imageName = '';
+      
+      if (eventRegData.paymentScreenshot) {
+        base64Image = await convertFileToBase64(eventRegData.paymentScreenshot);
+        imageName = eventRegData.paymentScreenshot.name;
+      }
+
+      // Prepare data for Google Sheets
+      const sheetData = {
+        timestamp: new Date().toISOString(),
+        email: eventRegData.email,
+        fullName: eventRegData.fullName,
+        numberOfParticipants: eventRegData.numberOfParticipants,
+        participant1Name: eventRegData.participants[0]?.name || '',
+        participant1Age: eventRegData.participants[0]?.age || '',
+        participant1Member: eventRegData.participants[0]?.isMember || '',
+        participant1Mobile: eventRegData.participants[0]?.mobile || '',
+        participant2Name: eventRegData.participants[1]?.name || '',
+        participant2Age: eventRegData.participants[1]?.age || '',
+        participant2Member: eventRegData.participants[1]?.isMember || '',
+        participant2Mobile: eventRegData.participants[1]?.mobile || '',
+        participant3Name: eventRegData.participants[2]?.name || '',
+        participant3Age: eventRegData.participants[2]?.age || '',
+        participant3Member: eventRegData.participants[2]?.isMember || '',
+        participant3Mobile: eventRegData.participants[2]?.mobile || '',
+        paymentScreenshot: base64Image,
+        paymentScreenshotName: imageName,
+      };
+
+      // Submit to Google Apps Script
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(sheetData),
+      });
+
+      // Store the name before resetting
+      setSubmittedName(eventRegData.fullName);
+      
+      // Show success modal
+      setShowSuccessModal(true);
+      setSubmitStatus('success');
+
+      // Reset form
+      setEventRegData({
+        email: '',
+        fullName: '',
+        numberOfParticipants: '1',
+        participants: [{ name: '', age: '', isMember: '', mobile: '' }],
+        paymentScreenshot: null
+      });
+      setEventRegTouched({
+        email: false,
+        fullName: false,
+        participants: [{ name: false, age: false, isMember: false, mobile: false }]
+      });
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+    } catch (error) {
+      console.error('Submission error:', error);
+      setSubmitStatus('error');
+      alert('There was an error submitting your registration. Please try again or use the Google Form directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Email Address */}
+      <div>
+        <label className="block text-gray-700 font-semibold mb-2">Email Address *</label>
+        <input
+          type="email"
+          value={eventRegData.email}
+          onChange={(e) => setEventRegData({...eventRegData, email: e.target.value})}
+          onBlur={() => markEventFieldTouched('email')}
+          className={`w-full px-4 py-3 rounded-lg border ${(eventRegTouched.email && !eventRegData.email) || (eventRegData.email && !isValidEmail(eventRegData.email)) ? 'border-red-500' : 'border-gray-300'} focus:border-orange-500 focus:outline-none bg-white`}
+          placeholder="Enter your email address"
+        />
+        {eventRegTouched.email && !eventRegData.email ? (
+          <p className="text-xs text-red-500 mt-1">This field is required</p>
+        ) : eventRegData.email && !isValidEmail(eventRegData.email) ? (
+          <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+        ) : null}
+      </div>
+
       {/* Full Name */}
       <div>
         <label className="block text-gray-700 font-semibold mb-2">Full Name *</label>
@@ -231,6 +416,7 @@ const EventRegistrationForm = () => {
       <div>
         <label className="block text-gray-700 font-semibold mb-2">Payment Screenshot *</label>
         <input
+          ref={fileInputRef}
           type="file"
           accept="image/*"
           onChange={(e) => setEventRegData({...eventRegData, paymentScreenshot: e.target.files[0]})}
@@ -244,13 +430,46 @@ const EventRegistrationForm = () => {
         )}
       </div>
 
+      {/* Error Status */}
+      {submitStatus === 'error' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+          <p className="font-semibold">✗ Submission failed</p>
+          <p className="text-sm mt-1">Please try again or use the Google Form directly.</p>
+        </div>
+      )}
+
       {/* Submit Button */}
       <button
         onClick={handleEventRegistrationSubmit}
-        className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 rounded-xl font-bold text-lg hover:from-orange-700 hover:to-red-700 transition shadow-lg hover:shadow-xl"
+        disabled={isSubmitting}
+        className={`w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-4 rounded-xl font-bold text-lg transition shadow-lg hover:shadow-xl ${
+          isSubmitting 
+            ? 'opacity-70 cursor-not-allowed' 
+            : 'hover:from-orange-700 hover:to-red-700'
+        }`}
       >
-        Submit Registration
+        {isSubmitting ? (
+          <span className="flex items-center justify-center">
+            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Submitting...
+          </span>
+        ) : (
+          'Submit Registration'
+        )}
       </button>
+
+      {/* Success Modal */}
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          setSubmitStatus(null);
+        }}
+        registrantName={submittedName}
+      />
     </div>
   );
 };

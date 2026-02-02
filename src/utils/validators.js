@@ -19,6 +19,11 @@ export const validateEmail = (value) => {
   return '';
 };
 
+// Check if email is valid (returns boolean)
+export const isValidEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 // Validate age (18-40) for events
 export const isValidAge = (age) => {
   const ageNum = parseInt(age);
