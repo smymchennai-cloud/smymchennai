@@ -21,7 +21,9 @@ const HeroSection = ({ scrollToSection }) => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={() => scrollToSection('register')}
+            onClick={() => {
+              window.location.href = '/member-registration';
+            }}
             className="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition flex items-center justify-center"
           >
             Join Us Today
