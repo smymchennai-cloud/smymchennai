@@ -12,8 +12,10 @@ import {
   EventFlyerModal,
   EventRegistrationDrawer
 } from './components';
+import MemberRegistrationPage from './components/pages/MemberRegistrationPage';
 
 const App = () => {
+  const isMemberRegistrationPage = window.location.pathname === '/member-registration';
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
@@ -46,6 +48,10 @@ const App = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  if (isMemberRegistrationPage) {
+    return <MemberRegistrationPage />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">

@@ -1,6 +1,5 @@
 import React from 'react';
-import { UserPlus } from 'lucide-react';
-import MemberRegistrationForm from '../forms/MemberRegistrationForm';
+import { ArrowRight, UserPlus } from 'lucide-react';
 
 const RegisterSection = () => {
   return (
@@ -12,7 +11,18 @@ const RegisterSection = () => {
           <p className="text-gray-600">Join our growing community and be part of something special</p>
         </div>
 
-        <MemberRegistrationForm />
+        <div className="bg-white rounded-2xl shadow-md border border-orange-100 p-8 text-center">
+          <p className="text-gray-600 mb-6">
+            Ready to join SMYM Chennai? Open the full membership form on a dedicated page.
+          </p>
+          <a
+            href="/member-registration"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition shadow-md hover:shadow-lg"
+          >
+            Open Membership Form
+            <ArrowRight size={18} />
+          </a>
+        </div>
       </div>
     </section>
   );
