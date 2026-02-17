@@ -3,6 +3,15 @@ import { Menu, X } from 'lucide-react';
 import { NAV_ITEMS } from '../../constants/formOptions';
 
 const Header = ({ activeSection, mobileMenuOpen, setMobileMenuOpen, scrollToSection }) => {
+  const handleNavigation = (item) => {
+    if (item === 'register') {
+      window.location.href = '/member-registration';
+      return;
+    }
+
+    scrollToSection(item);
+  };
+
   return (
     <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm shadow-md z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -23,7 +32,7 @@ const Header = ({ activeSection, mobileMenuOpen, setMobileMenuOpen, scrollToSect
             {NAV_ITEMS.map((item) => (
               <button
                 key={item}
-                onClick={() => scrollToSection(item)}
+                onClick={() => handleNavigation(item)}
                 className={`capitalize font-semibold transition ${
                   activeSection === item 
                     ? 'text-orange-600' 
@@ -51,7 +60,7 @@ const Header = ({ activeSection, mobileMenuOpen, setMobileMenuOpen, scrollToSect
               {NAV_ITEMS.map((item) => (
                 <button
                   key={item}
-                  onClick={() => scrollToSection(item)}
+                  onClick={() => handleNavigation(item)}
                   className={`capitalize font-semibold text-left ${
                     activeSection === item 
                       ? 'text-orange-600' 

@@ -19,7 +19,7 @@ const RegisterSection = () => {
             href="/member-registration"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-orange-700 hover:to-red-700 transition shadow-md hover:shadow-lg"
           >
-            Open Membership Form
+            Become a Member
             <ArrowRight size={18} />
           </a>
         </div>
