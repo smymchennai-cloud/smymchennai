@@ -12,9 +12,9 @@ export { default as RegisterSection } from './sections/RegisterSection';
 
 // Form Components
 export { default as MemberRegistrationForm } from './forms/MemberRegistrationForm';
-export { default as EventRegistrationForm } from './forms/EventRegistrationForm';
 
 // Modal Components
 export { default as GalleryModal } from './modals/GalleryModal';
 export { default as EventFlyerModal } from './modals/EventFlyerModal';
+export { default as QuietlyPowerfulForm } from './forms/QuietlyPowerfulForm';
 export { default as EventRegistrationDrawer } from './modals/EventRegistrationDrawer';

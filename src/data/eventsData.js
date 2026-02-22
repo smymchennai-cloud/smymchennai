@@ -2,36 +2,16 @@
 export const upcomingEvents = [
   {
     id: 1,
-    name: 'Neel aur Neer',
-    date: '2026-02-15',
-    time: '5:30 AM',
-    venue: 'Kilpauk, Chennai',
-    description: '3Kms Jog/Walk with Ice Bath. Age group: 18-40 years',
+    name: 'Quietly Powerful',
+    date: '2026-03-08',
+    time: '4PM to 7PM',
+    venue: 'Shenoy Nagar',
+    description: 'Special event celebrating International Women\'s Day',
     status: 'Coming Soon',
-    flyer: '/neel-neer.png'
+    flyer: '/photos/quietly-powerful.png'
   },
   {
     id: 2,
-    name: 'Turtle Trail',
-    date: '2026-02-21',
-    time: '11:00 PM - 5:00 AM',
-    venue: 'Besant Nagar Beach',
-    description: 'Age group: 18-40 years',
-    status: 'Registrations Closed',
-    flyer: '/Turtle-Trail.png'
-  },
-  {
-    id: 3,
-    name: 'Quietly Powerful',
-    date: '2026-03-08',
-    time: 'TBA',
-    venue: 'TBA',
-    description: 'Special event celebrating International Women\'s Day',
-    status: 'Coming Soon',
-    flyer: '/quietly-powerful.png'
-  },
-  {
-    id: 4,
     name: 'AGM',
     date: '2026-04-05',
     time: 'TBA',
@@ -41,7 +21,7 @@ export const upcomingEvents = [
     flyer: null
   },
   {
-    id: 5,
+    id: 3,
     name: 'Bulandi 2026',
     date: '2026-07-26',
     time: 'TBA',
@@ -54,6 +34,20 @@ export const upcomingEvents = [
 
 // Past Events
 export const pastEvents = [
+  { 
+    name: 'Turtle Trail', 
+    date: '2026-02-21', 
+    attendees: 30,
+    description: '',
+    coordinator: 'Vikramaditya Bisani & Atul Maheswari'
+  },
+  { 
+    name: 'Neel aur Neer', 
+    date: '2026-02-15', 
+    attendees: 30,
+    description: '',
+    coordinator: 'Yash Malpani'
+  },
   { 
     name: 'Temple Run', 
     date: '2026-01-25', 
@@ -124,5 +118,12 @@ export const pastEvents = [
     attendees: 75,
     description: 'SMYM hosted TKPPMYS Prelims at Agarwal Vidyalaya, Chennai with an objective to select team representing TKPPMYS at All India culturals, Nextgen Super star.',
     specialMention: 'Sponsor Shri Kundanlal Jethmal Anand Chandak (Lathiwale)'
+  },
+  { 
+    name: 'Shivoham - Culturals', 
+    date: '2025-06-15', 
+    attendees: '1000+',
+    description: '',
+    specialMention: ''
   }
 ];

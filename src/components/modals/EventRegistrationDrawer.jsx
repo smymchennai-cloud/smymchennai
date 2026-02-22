@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Calendar, MapPin } from 'lucide-react';
-import EventRegistrationForm from '../forms/EventRegistrationForm';
+import QuietlyPowerfulForm from '../forms/QuietlyPowerfulForm';
 
 const EventRegistrationDrawer = ({ isOpen, onClose, event }) => {
   // Prevent body scroll when drawer is open
@@ -45,7 +45,7 @@ const EventRegistrationDrawer = ({ isOpen, onClose, event }) => {
       {/* Drawer */}
       <div className={`fixed top-0 right-0 h-full w-full sm:w-[480px] md:w-[520px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white p-6">
+        <div className="bg-gradient-to-r from-pink-600 to-purple-600 text-white p-6">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold mb-2">Event Registration</h2>
@@ -70,13 +70,13 @@ const EventRegistrationDrawer = ({ isOpen, onClose, event }) => {
                   month: 'long', 
                   year: 'numeric' 
                 })}
-                {event.time && ` at ${event.time}`}
+                {event.time && ` • ${event.time}`}
               </span>
             </div>
             {event.venue && (
               <div className="flex items-center">
                 <MapPin className="w-4 h-4 mr-2" />
-                <span>{event.venue}</span>
+                <span>{event.venue} (Exact details to be shared later)</span>
               </div>
             )}
             {event.description && (
@@ -87,7 +87,7 @@ const EventRegistrationDrawer = ({ isOpen, onClose, event }) => {
 
         {/* Form Content */}
         <div className="overflow-y-auto h-[calc(100%-200px)] p-6">
-          <EventRegistrationForm />
+          <QuietlyPowerfulForm />
         </div>
       </div>
     </>

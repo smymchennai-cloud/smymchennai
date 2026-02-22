@@ -71,8 +71,8 @@ const App = () => {
 
       {/* Events Section */}
       <EventsSection 
-        onOpenRegistration={setRegistrationEvent}
         onViewFlyer={setSelectedEventFlyer}
+        onOpenRegistration={setRegistrationEvent}
       />
 
       {/* Team Section */}

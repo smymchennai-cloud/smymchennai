@@ -32,10 +32,7 @@ const getEventStatusStyle = (status) => {
   }
 };
 
-const EventsSection = ({ 
-  onOpenRegistration, 
-  onViewFlyer 
-}) => {
+const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
   return (
     <section id="events" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-orange-50">
       <div className="max-w-7xl mx-auto">
@@ -118,10 +115,10 @@ const EventsSection = ({
                           View Details
                         </button>
                       )}
-                      {event.status !== 'Registrations Closed' && event.name === 'Neel aur Neer' && (
+                      {event.name === 'Quietly Powerful' && (
                         <button
                           onClick={() => onOpenRegistration(event)}
-                          className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
+                          className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700"
                         >
                           Register Now
                           <ChevronRight className="ml-1 w-4 h-4" />
