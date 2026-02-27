@@ -23,6 +23,12 @@ const getEventStatusStyle = (status) => {
         badge: 'bg-purple-100 text-purple-700',
         opacity: ''
       };
+    case 'Scheduled':
+      return {
+        card: 'bg-gradient-to-br from-cyan-50 to-sky-100 border-l-4 border-cyan-500',
+        badge: 'bg-cyan-100 text-cyan-700',
+        opacity: ''
+      };
     default:
       return {
         card: 'bg-gradient-to-br from-orange-50 to-amber-100 border-l-4 border-orange-500',
@@ -47,6 +53,10 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
           <div className="flex items-center text-sm">
             <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
             <span className="text-gray-600">Coming Soon</span>
+          </div>
+          <div className="flex items-center text-sm">
+            <span className="w-3 h-3 bg-cyan-500 rounded-full mr-2"></span>
+            <span className="text-gray-600">Scheduled</span>
           </div>
           <div className="flex items-center text-sm">
             <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
@@ -74,10 +84,10 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
               return (
                 <div 
                   key={event.id} 
-                  className={`rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition ${statusStyle.card}`}
+                  className={`rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition ${statusStyle.card} flex flex-col`}
                 >
-                  <div className="p-6">
-                    <div className={statusStyle.opacity}>
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className={`${statusStyle.opacity} flex-grow`}>
                       <div className="flex justify-between items-start mb-3">
                         <h4 className="font-bold text-xl text-gray-800">{event.name}</h4>
                         <span className={`text-xs px-2 py-1 rounded-full font-semibold ${statusStyle.badge}`}>
@@ -87,7 +97,11 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
                       <div className="space-y-2 text-gray-600 text-sm">
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 mr-2" />
-                          <span>{new Date(event.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          <span>
+                            {event.date === 'TBD' || event.date === 'TBA' 
+                              ? event.date 
+                              : new Date(event.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
                         </div>
                         {event.time && (
                           <div className="flex items-center">
@@ -115,10 +129,10 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
                           View Details
                         </button>
                       )}
-                      {event.name === 'Quietly Powerful' && (
+                      {event.name === 'Temple Run 2.0' && (
                         <button
                           onClick={() => onOpenRegistration(event)}
-                          className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:from-pink-700 hover:to-purple-700"
+                          className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700"
                         >
                           Register Now
                           <ChevronRight className="ml-1 w-4 h-4" />

@@ -7,21 +7,41 @@ export const upcomingEvents = [
     time: '4PM to 7PM',
     venue: 'Shenoy Nagar',
     description: 'Special event celebrating International Women\'s Day',
-    status: 'Coming Soon',
+    status: 'Registrations Closed',
     flyer: '/photos/quietly-powerful.png'
   },
   {
     id: 2,
-    name: 'AGM',
-    date: '2026-04-05',
-    time: 'TBA',
-    venue: 'TBA',
-    description: 'Annual General Meeting - Review, reflect, and plan ahead',
+    name: 'Temple Run 2.0',
+    date: '2026-04-04',
+    time: '2 Days (Pradakshina)',
+    venue: 'Tiruvannamalai',
+    description: 'Sacred 14-km Arunachala Pradakshina visiting eight Ashtalingams.',
     status: 'Coming Soon',
-    flyer: null
+    flyer: '/photos/Temple-run2.0.png'
   },
   {
     id: 3,
+    name: 'Vispott',
+    date: "TBD",
+    time: "TBD",
+    venue: 'TBD',
+    description: 'Esport Tournament',
+    status: 'Scheduled',
+    flyer: '/photos/Vispott.png'
+  },
+  {
+    id: 3,
+    name: 'AGM',
+    date: '2026-05-03',
+    time: 'TBA',
+    venue: 'TBA',
+    description: 'Annual General Meeting - Review, reflect, and plan ahead',
+    status: 'Scheduled',
+    flyer: null
+  },
+  {
+    id: 4,
     name: 'Bulandi 2026',
     date: '2026-07-26',
     time: 'TBA',
@@ -124,7 +144,7 @@ export const pastEvents = [
     name: 'Shivoham - Culturals', 
     date: '2025-06-15', 
     attendees: '1000+',
-    description: '',
+    description: 'Shree Maheshwari Yuva Mandal presented Shivoham on Mahesh Navmi 2025, themed “Mansarovar – The Sacred Journey to Mount Kailash,” on 4th June 2025. Guided by Mr. Vinod Dwarkani, the cultural showcase depicted faith and transformation through impactful narration and performances, receiving appreciation from Smt. Bhagwati Devi Baldwa and the community.',
     specialMention: ''
   }
 ];
