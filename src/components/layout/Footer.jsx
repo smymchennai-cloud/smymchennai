@@ -33,22 +33,6 @@ const Footer = () => {
             <span>smymchennai@gmail.com</span>
           </a>
           <a 
-            href="tel:9551730251" 
-            className="flex items-center gap-2 hover:text-orange-500 transition"
-          >
-            <Phone className="w-5 h-5" />
-            <span>9551730251</span>
-          </a>
-          <a 
-            href="https://wa.me/916383936181" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:text-green-500 transition"
-          >
-            <WhatsAppIcon className="w-5 h-5" />
-            <span>6383936181</span>
-          </a>
-          <a 
             href="https://www.facebook.com/share/1AV57yUmYX/" 
             target="_blank" 
             rel="noopener noreferrer" 

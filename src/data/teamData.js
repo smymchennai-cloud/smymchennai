@@ -2,7 +2,7 @@
 export const officeBearers = [
   { name: 'Sudarshan Mantri', position: 'President', photo: '/photos/sudharshan.png', photoPosition: 'top' },
   { name: 'Kushal Maheswari', position: 'Secretary', photo: '/photos/kushal.png', photoPosition: 'top' },
-  { name: 'Hemanth Bhattad', position: 'Vice President', photo: '/photos/hemanth.png', photoPosition: 'center 15%' },
+  { name: 'Hemant Bhathad', position: 'Vice President', photo: '/photos/hemanth.png', photoPosition: 'center 15%' },
   { name: 'Ketan Bisani', position: 'Vice President', photo: '/photos/ketan.png', photoPosition: 'center 25%' },
   { name: 'Mohit Bajaj', position: 'Treasurer', photo: '/photos/mohit.png', photoPosition: 'center 20%' },
   { name: 'Shubham Sarda', position: 'Joint Secretary', photo: '/photos/shubham.png', photoPosition: 'center 20%' },
@@ -14,7 +14,7 @@ export const officeBearers = [
 export const executiveMembers = [
   { name: 'Abhinandan Chandak', position: 'Executive Member', photo: '/photos/abhinandan.png', photoPosition: 'center 5%'  },
   { name: 'Ankit Rathi', position: 'Executive Member', photo: '/photos/ankit.png' },
-  { name: 'Arnav Maheshwari', position: 'Executive Member', photo: '/photos/arnav.png' },
+  { name: 'Arnav Maheswary', position: 'Executive Member', photo: '/photos/arnav.png' },
   { name: 'Arvind Kumar Jetha', position: 'Executive Member', photo: '/photos/arvind.png' },
   { name: 'Ashish Maheswari', position: 'Executive Member', photo: '/photos/ashish.png', photoPosition: 'center 20%' },
   { name: 'Atul Maheswari', position: 'Executive Member', photo: '/photos/atul.png', photoPosition: 'center 20%' },
@@ -29,12 +29,12 @@ export const executiveMembers = [
   { name: 'Tapas Bhattad', position: 'Executive Member', photo: '/photos/tapas.png', photoPosition: 'center 5%'  },
   { name: 'Vikramaditya Bisani', position: 'Executive Member', photo: '/photos/vikramaditya.png', photoPosition: 'center 15%' },
   { name: 'Yash Malpani', position: 'Executive Member', photo: '/photos/yash.png' },
-  { name: 'Yashika Malpani', position: 'Executive Member', photo: '/photos/yashika.png', photoPosition: 'center 20%'  },
-  { name: 'Anurag Maheshwari', position: 'Sabha Conveyor', photo: '/photos/anurag.png' }
+  { name: 'Yashika Malpani', position: 'Executive Member', photo: '/photos/yashika.png', photoPosition: 'center 20%'  }
 ];
 
 // Advisors
 export const advisors = [
+  { name: 'Anurag Maheshwari', position: 'Advisor', photo: '/photos/anurag.png' },
   { name: 'Hari Ratan Rathi', position: 'Advisor', photo: '/photos/hari.png', photoPosition: 'center 20%' },
   { name: 'Jai Prakash Malpani', position: 'Advisor', photo: '/photos/jaiprakash.png', photoPosition: 'center 20%' },
   { name: 'Praful Mohta', position: 'Advisor', photo: '/photos/praful.png', photoPosition: 'center 10%' },

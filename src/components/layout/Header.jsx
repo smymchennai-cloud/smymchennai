@@ -22,8 +22,8 @@ const Header = ({ activeSection, mobileMenuOpen, setMobileMenuOpen, scrollToSect
               alt="SMYM Chennai Logo" 
               className="w-12 h-12 object-contain"
             />
-            <span className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              Empowering Youth, Building Community
+            <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+              Shree Maheshwari Yuva Mandal, Chennai
             </span>
           </div>
           

@@ -16,7 +16,7 @@ const HeroSection = ({ scrollToSection }) => {
         <p className="text-sm text-gray-600 mb-6">
           (under the patronage of Shree Maheshwari Sabha, Chennai)
         </p>
-        <p className="text-xl text-gray-600 mb-8">
+        <p className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-8">
           Empowering Youth, Building Community
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
