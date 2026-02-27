@@ -38,14 +38,14 @@ export const pastEvents = [
     name: 'Turtle Trail', 
     date: '2026-02-21', 
     attendees: 30,
-    description: '',
+    description: 'Along the Turtle Trail was a guided night walk along Chennai\'s shoreline in association with the Students\' Sea Turtle Conservation Network. Over 8 kilometres of sand, participants experienced the physical challenge of a midnight trail, witnessed the realities of marine life, and discovered a live turtle nest, a powerful reminder of resilience, life, and balance.',
     coordinator: 'Vikramaditya Bisani & Atul Maheswari'
   },
   { 
     name: 'Neel aur Neer', 
     date: '2026-02-15', 
     attendees: 30,
-    description: '',
+    description: 'The event was a Mahashivratri morning experience designed to challenge the mind and connect inward. Participants began with a 3.3 km pre-dawn jog, followed by an inner circle discussion and a guided ice bath. Rooted in resilience and reflection, the experience blended physical discipline with mental stillness.',
     coordinator: 'Yash Malpani'
   },
   { 
@@ -68,7 +68,8 @@ export const pastEvents = [
     date: '2025-10-05', 
     attendees: '250+',
     description: 'SMYM\'s Diwali Milan event which saw felicitation of SMYM\'s Past President & Secretary and recognition of NextGen Superstar participants & winners. The latter also presented their Finale acts on stage and enthralled the audience.',
-    coordinator: 'Ankit Rathi & Ketan Bisani'
+    coordinator: 'Ankit Rathi & Ketan Bisani',
+    specialMention: 'Event Sponsor Shri Praveen Maheshwari (Bisani)'
   },
   { 
     name: 'Mission ISRO', 
