@@ -52,7 +52,10 @@ const GalleryModal = ({ album, onClose }) => {
       onClick={onClose}
     >
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
+      <div 
+        className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="text-white">
           <h3 className="font-bold text-lg">{album.title}</h3>
           <div className="flex items-center gap-3 text-sm opacity-70">
@@ -101,18 +104,21 @@ const GalleryModal = ({ album, onClose }) => {
       </div>
 
       {viewMode === 'slideshow' ? (
-        <div 
-          className="relative w-full h-full flex items-center justify-center px-16"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="relative w-full h-full flex items-center justify-center px-16">
           <button
-            onClick={goToPrevious}
+            onClick={(e) => {
+              e.stopPropagation();
+              goToPrevious();
+            }}
             className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full transition z-10"
           >
             <ChevronLeft className="w-8 h-8 text-white" />
           </button>
 
-          <div className="relative max-w-5xl max-h-[80vh] flex items-center justify-center">
+          <div 
+            className="relative max-w-5xl max-h-[80vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
@@ -141,7 +147,10 @@ const GalleryModal = ({ album, onClose }) => {
           </div>
 
           <button
-            onClick={goToNext}
+            onClick={(e) => {
+              e.stopPropagation();
+              goToNext();
+            }}
             className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full transition z-10"
           >
             <ChevronRight className="w-8 h-8 text-white" />

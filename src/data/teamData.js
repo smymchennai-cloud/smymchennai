@@ -34,7 +34,7 @@ export const executiveMembers = [
 
 // Advisors
 export const advisors = [
-  { name: 'Anurag Maheshwari', position: 'Advisor', photo: '/photos/anurag.png' },
+  { name: 'Anurag Maheshwari', position: 'Sabha Convener', photo: '/photos/anurag.png' },
   { name: 'Hari Ratan Rathi', position: 'Advisor', photo: '/photos/hari.png', photoPosition: 'center 20%' },
   { name: 'Jai Prakash Malpani', position: 'Advisor', photo: '/photos/jaiprakash.png', photoPosition: 'center 20%' },
   { name: 'Praful Mohta', position: 'Advisor', photo: '/photos/praful.png', photoPosition: 'center 10%' },
