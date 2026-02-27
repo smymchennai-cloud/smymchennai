@@ -3,8 +3,17 @@ import { ChevronRight } from 'lucide-react';
 
 const HeroSection = ({ scrollToSection }) => {
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 via-white to-red-100 pt-20 px-4">
-      <div className="text-center max-w-4xl">
+    <section id="home" className="min-h-screen flex items-center justify-center pt-20 px-4 relative overflow-hidden">
+      {/* Blurred Background Image */}
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center blur-sm scale-105"
+        style={{ backgroundImage: 'url(/photos/group-pic.png)' }}
+      />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-100/80 via-white/70 to-red-100/80" />
+      
+      {/* Content */}
+      <div className="text-center max-w-4xl relative z-10">
         <img 
           src="/smym-logo-no-bg.png" 
           alt="SMYM Chennai Logo" 

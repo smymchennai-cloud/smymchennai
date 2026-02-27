@@ -144,7 +144,6 @@ export const pastEvents = [
     name: 'Shivoham - Culturals', 
     date: '2025-06-15', 
     attendees: '1000+',
-    description: 'Shree Maheshwari Yuva Mandal presented Shivoham on Mahesh Navmi 2025, themed “Mansarovar – The Sacred Journey to Mount Kailash,” on 4th June 2025. Guided by Mr. Vinod Dwarkani, the cultural showcase depicted faith and transformation through impactful narration and performances, receiving appreciation from Smt. Bhagwati Devi Baldwa and the community.',
-    specialMention: ''
+    description: 'Mansarovar - Sacred Journey to Mt. Kailash" themed cultural event conceptualized and presented by SMYM at Shree Maheshwari Sabha\'s Mahesh Navmi event, Shivoham.'
   }
 ];
