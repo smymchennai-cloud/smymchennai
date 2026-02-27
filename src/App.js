@@ -89,7 +89,7 @@ const App = () => {
 
       {/* Gallery Modal */}
       <GalleryModal 
-        image={selectedGalleryImage} 
+        album={selectedGalleryImage} 
         onClose={() => setSelectedGalleryImage(null)} 
       />
 

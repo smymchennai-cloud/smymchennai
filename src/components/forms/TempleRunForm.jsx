@@ -15,7 +15,7 @@ const convertFileToBase64 = (file) => {
   });
 };
 
-const SuccessModal = ({ isOpen, onClose, registrantName }) => {
+const SuccessModal = ({ isOpen, onClose, registrantName, isCashPayment, totalAmount }) => {
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(
@@ -33,13 +33,15 @@ const SuccessModal = ({ isOpen, onClose, registrantName }) => {
           <X size={24} />
         </button>
 
-        <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-8 text-center">
+        <div className={`p-8 text-center ${isCashPayment ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600' : 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600'}`}>
           <div className="w-20 h-20 bg-white rounded-full mx-auto flex items-center justify-center shadow-lg mb-4">
-            <CheckCircle className="w-12 h-12 text-green-500" />
+            <CheckCircle className={`w-12 h-12 ${isCashPayment ? 'text-yellow-500' : 'text-green-500'}`} />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
             <PartyPopper className="w-6 h-6 text-yellow-300" />
-            <h2 className="text-2xl font-bold text-white">Registration Successful!</h2>
+            <h2 className="text-2xl font-bold text-white">
+              {isCashPayment ? 'Registration Submitted!' : 'Registration Successful!'}
+            </h2>
             <PartyPopper className="w-6 h-6 text-yellow-300 scale-x-[-1]" />
           </div>
         </div>
@@ -49,8 +51,22 @@ const SuccessModal = ({ isOpen, onClose, registrantName }) => {
             Thank you, <span className="font-semibold text-orange-600">{registrantName}</span>!
           </p>
           <p className="text-gray-600 mb-4">
-            Your registration for <strong>Temple Run 2.0</strong> has been submitted successfully.
+            Your registration for <strong>Temple Run 2.0</strong> has been submitted.
           </p>
+          
+          {isCashPayment && (
+            <div className="bg-yellow-50 rounded-xl p-4 mb-4 border border-yellow-300">
+              <p className="text-sm text-yellow-800 font-semibold mb-2">
+                ⚠️ Important: Payment Pending
+              </p>
+              <p className="text-sm text-yellow-700">
+                Your registration will be confirmed only after you make the payment of <strong>₹{totalAmount?.toLocaleString()}/-</strong>
+              </p>
+              <p className="text-xs text-yellow-600 mt-2">
+                Please pay in cash to the event coordinator.
+              </p>
+            </div>
+          )}
           
           <div className="bg-orange-50 rounded-xl p-4 mb-4 border border-orange-100">
             <p className="text-sm text-orange-700">
@@ -125,6 +141,8 @@ const TempleRunForm = () => {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedName, setSubmittedName] = useState('');
+  const [wasCashPayment, setWasCashPayment] = useState(false);
+  const [submittedAmount, setSubmittedAmount] = useState(0);
 
   const markFieldTouched = (field) => {
     setTouched(prev => ({ ...prev, [field]: true }));
@@ -205,11 +223,12 @@ const TempleRunForm = () => {
     }
     
     if (!formData.paymentMode) {
-      alert('Please select your payment mode (Gpay/NEFT)');
+      alert('Please select your payment mode');
       return;
     }
     
-    if (!formData.paymentScreenshot) {
+    // Only require screenshot for non-cash payments
+    if (formData.paymentMode !== 'Cash' && !formData.paymentScreenshot) {
       alert('Please upload your payment screenshot');
       return;
     }
@@ -269,6 +288,8 @@ const TempleRunForm = () => {
       });
 
       setSubmittedName(formData.fullName);
+      setWasCashPayment(formData.paymentMode === 'Cash');
+      setSubmittedAmount(totalAmount);
       setShowSuccessModal(true);
       setSubmitStatus('success');
 
@@ -512,35 +533,46 @@ const TempleRunForm = () => {
         <label className="block text-gray-700 font-semibold mb-2">Payment Mode *</label>
         <select
           value={formData.paymentMode}
-          onChange={(e) => setFormData({...formData, paymentMode: e.target.value})}
+          onChange={(e) => {
+            setFormData({...formData, paymentMode: e.target.value, paymentScreenshot: null});
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          }}
           onBlur={() => markFieldTouched('paymentMode')}
           className={`w-full px-4 py-3 rounded-lg border ${touched.paymentMode && !formData.paymentMode ? 'border-red-500' : 'border-gray-300'} focus:border-orange-500 focus:outline-none bg-white`}
         >
           <option value="">-- Select Payment Mode --</option>
           <option value="Gpay">Gpay</option>
           <option value="NEFT">NEFT</option>
+          <option value="Cash">Cash</option>
         </select>
         {touched.paymentMode && !formData.paymentMode && (
           <p className="text-xs text-red-500 mt-1">This field is required</p>
         )}
-      </div>
-
-      <div>
-        <label className="block text-gray-700 font-semibold mb-2">Payment Screenshot *</label>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFormData({...formData, paymentScreenshot: e.target.files[0]})}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-100 file:text-orange-600 file:font-semibold hover:file:bg-orange-200 file:cursor-pointer"
-        />
-        {formData.paymentScreenshot && (
-          <p className="text-sm text-green-600 mt-2 flex items-center">
-            <span className="mr-1">✓</span>
-            {formData.paymentScreenshot.name}
+        {formData.paymentMode === 'Cash' && (
+          <p className="text-xs text-yellow-600 mt-1 bg-yellow-50 p-2 rounded">
+            ⚠️ Registration will be confirmed only after cash payment is received.
           </p>
         )}
       </div>
+
+      {formData.paymentMode && formData.paymentMode !== 'Cash' && (
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">Payment Screenshot *</label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFormData({...formData, paymentScreenshot: e.target.files[0]})}
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-orange-500 focus:outline-none bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-100 file:text-orange-600 file:font-semibold hover:file:bg-orange-200 file:cursor-pointer"
+          />
+          {formData.paymentScreenshot && (
+            <p className="text-sm text-green-600 mt-2 flex items-center">
+              <span className="mr-1">✓</span>
+              {formData.paymentScreenshot.name}
+            </p>
+          )}
+        </div>
+      )}
 
       {submitStatus === 'error' && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
@@ -576,8 +608,11 @@ const TempleRunForm = () => {
         onClose={() => {
           setShowSuccessModal(false);
           setSubmitStatus(null);
+          setWasCashPayment(false);
         }}
         registrantName={submittedName}
+        isCashPayment={wasCashPayment}
+        totalAmount={submittedAmount}
       />
     </div>
   );
