@@ -4,7 +4,7 @@ import { isValidMobile, isValidEmail } from '../../utils/validators';
 import { BANK_DETAILS, YES_NO_OPTIONS, PARTICIPANT_COUNT_OPTIONS } from '../../constants/formOptions';
 import { CheckCircle, X, PartyPopper, Users } from 'lucide-react';
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_TEMPLE_RUN_SCRIPT_ID/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynFcaZ3LG9CTI5vWB0zc0thEISlFTSd-flcA2N9-iddEgHBz4v_NEbkNi4dxqws21e/exec';
 
 const convertFileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
