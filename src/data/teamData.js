@@ -2,12 +2,13 @@
 export const officeBearers = [
   { name: 'Sudarshan Mantri', position: 'President', photo: '/photos/sudharshan.png', photoPosition: 'top' },
   { name: 'Kushal Maheswari', position: 'Secretary', photo: '/photos/kushal.png', photoPosition: 'top' },
-  { name: 'Hemant Bhathad', position: 'Vice President', photo: '/photos/hemanth.png', photoPosition: 'center 15%' },
+  { name: 'Hemanth Bhathad', position: 'Vice President', photo: '/photos/hemanth.png', photoPosition: 'center 15%' },
   { name: 'Ketan Bisani', position: 'Vice President', photo: '/photos/ketan.png', photoPosition: 'center 25%' },
   { name: 'Mohit Bajaj', position: 'Treasurer', photo: '/photos/mohit.png', photoPosition: 'center 20%' },
   { name: 'Shubham Sarda', position: 'Joint Secretary', photo: '/photos/shubham.png', photoPosition: 'center 20%' },
   { name: 'Nikhil Mohta', position: 'Joint Secretary', photo: '/photos/nikhil.png', photoPosition: 'center 20%'  },
-  { name: 'Madan Mohan Rathi', position: 'IPP', photo: '/photos/madan.png', photoPosition: 'center 20%' }
+  { name: 'Madan Mohan Rathi', position: 'IPP', photo: '/photos/madan.png', photoPosition: 'center 20%' },
+  { name: 'Pankaj Mohata', position: 'IPS', photo: '/photos/pankaj.png', photoPosition: 'center 20%' }
 ];
 
 // Executive Committee Members
