@@ -26,7 +26,7 @@ export const upcomingEvents = [
     date: "TBD",
     time: "TBD",
     venue: 'TBD',
-    description: 'Esport Tournament',
+    description: 'Esports Tournament',
     status: 'Scheduled',
     flyer: '/photos/Vispott.png'
   },
@@ -137,13 +137,13 @@ export const pastEvents = [
     name: 'Nextgen Superstar – Tayyari Jeet Ki', 
     date: '2025-06-29', 
     attendees: 75,
-    description: 'SMYM hosted TKPPMYS Prelims at Agarwal Vidyalaya, Chennai with an objective to select team representing TKPPMYS at All India culturals, Nextgen Super star.',
+    description: 'SMYM hosted TKPPMYS Prelims at Agarwal Vidyalaya, Chennai with an objective to select team representing TKPPMYS at All India Culturals, NextGen Superstar.',
     specialMention: 'Sponsor Shri Kundanlal Jethmal Anand Chandak (Lathiwale)'
   },
   { 
     name: 'Shivoham - Culturals', 
     date: '2025-06-15', 
     attendees: '1000+',
-    description: 'Mansarovar - Sacred Journey to Mt. Kailash" themed cultural event conceptualized and presented by SMYM at Shree Maheshwari Sabha\'s Mahesh Navmi event, Shivoham.'
+    description: 'Mansarovar - Sacred Journey to Mt. Kailash themed cultural event conceptualized and presented by SMYM at Shree Maheshwari Sabha\'s Mahesh Navmi event, Shivoham.'
   }
 ];

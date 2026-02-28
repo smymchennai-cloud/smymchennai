@@ -834,7 +834,7 @@ const MemberRegistrationForm = () => {
                   className="mt-1 w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                 />
                 <span className="text-gray-700 text-sm">
-                  (a) I hereby declare that the information given above are true and correct to the best of my knowledge and belief and nothing has been concealed.
+                  (a) I hereby declare that the information given above is true and correct to the best of my knowledge and belief and nothing has been concealed.
                 </span>
               </label>
               <label className="flex items-start space-x-3 cursor-pointer">
