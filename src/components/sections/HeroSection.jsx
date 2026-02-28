@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Zap } from 'lucide-react';
 
 const HeroSection = ({ scrollToSection }) => {
   return (
@@ -11,6 +11,60 @@ const HeroSection = ({ scrollToSection }) => {
       />
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-orange-100/80 via-white/70 to-red-100/80" />
+      
+      {/* Bulandi Flash Banner - Top Right with Thunder Effect */}
+      <div className="absolute top-24 right-4 md:right-8 z-20 group">
+        {/* Outer Glow Animation */}
+        <div className="absolute -inset-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-3xl blur-xl opacity-75 animate-pulse" />
+        <div className="absolute -inset-2 bg-gradient-to-r from-yellow-300 via-yellow-400 to-orange-500 rounded-2xl blur-md animate-ping opacity-40" />
+        
+        {/* Main Card */}
+        <div className="relative bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 p-1 rounded-2xl shadow-[0_0_30px_rgba(250,204,21,0.6)]">
+          <div className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 rounded-xl p-3 flex items-center gap-3 relative overflow-hidden">
+            {/* Electric Background Effect */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(250,204,21,0.1),transparent_70%)]" />
+            
+            {/* Lightning Bolt Left */}
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 animate-bounce">
+              <Zap className="w-8 h-8 text-yellow-400 fill-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,1)]" />
+            </div>
+            
+            <img 
+              src="/bulandi.png" 
+              alt="Bulandi 2026" 
+              className="w-16 h-16 md:w-20 md:h-20 object-contain rounded-lg border-2 border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.7)] ml-4"
+            />
+            <div className="text-left relative z-10">
+              <div className="flex items-center gap-1">
+                <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400 animate-pulse" />
+                <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider animate-pulse drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">
+                  Save the Date
+                </span>
+                <Zap className="w-4 h-4 text-yellow-400 fill-yellow-400 animate-pulse" />
+              </div>
+              <p className="font-extrabold text-white text-sm md:text-lg tracking-wide drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                Bulandi is Back!
+              </p>
+              <p className="text-yellow-400 font-bold text-xs md:text-sm drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">
+                ⚡ July 2026 ⚡
+              </p>
+            </div>
+            
+            {/* Lightning Bolt Right */}
+            <div className="absolute -right-2 top-1/2 -translate-y-1/2 animate-bounce" style={{ animationDelay: '0.3s' }}>
+              <Zap className="w-8 h-8 text-yellow-400 fill-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,1)]" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Extra Lightning Sparks */}
+        <div className="absolute -top-2 left-1/4 animate-ping">
+          <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+        </div>
+        <div className="absolute -bottom-2 right-1/4 animate-ping" style={{ animationDelay: '0.5s' }}>
+          <Zap className="w-5 h-5 text-yellow-300 fill-yellow-300" />
+        </div>
+      </div>
       
       {/* Content */}
       <div className="text-center max-w-4xl relative z-10">
