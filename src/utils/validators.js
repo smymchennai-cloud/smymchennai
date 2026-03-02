@@ -42,7 +42,14 @@ export const getMaxDobFor18Plus = () => {
   return date.toISOString().split('T')[0];
 };
 
-// Validate DOB is at least 18 years ago
+// Get min date for max 41 years (person cannot be older than 41)
+export const getMinDobFor41Max = () => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 41);
+  return date.toISOString().split('T')[0];
+};
+
+// Validate DOB is between 18 and 41 years
 export const validateDobAge18 = (value) => {
   if (!value) return '';
   const dob = new Date(value);
@@ -54,6 +61,7 @@ export const validateDobAge18 = (value) => {
   const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
   
   if (actualAge < 18) return 'Must be at least 18 years old';
+  if (actualAge > 41) return 'Maximum age allowed is 41 years';
   return '';
 };
 

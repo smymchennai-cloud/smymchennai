@@ -7,7 +7,8 @@ import {
   validateDobAge18, 
   validateNotFutureDate,
   getTodayDate,
-  getMaxDobFor18Plus 
+  getMaxDobFor18Plus,
+  getMinDobFor41Max 
 } from '../../utils/validators';
 import { 
   BLOOD_GROUPS, 
@@ -473,6 +474,7 @@ const MemberRegistrationForm = () => {
             value={formData.dob}
             onChange={(e) => setFormData({...formData, dob: e.target.value})}
             onBlur={() => markFormFieldTouched('dob')}
+            min={getMinDobFor41Max()}
             max={getMaxDobFor18Plus()}
             className={`w-full px-4 py-3 rounded-lg border ${(formTouched.dob && !formData.dob) || validateDobAge18(formData.dob) ? 'border-red-500' : 'border-gray-300'} focus:border-orange-500 focus:outline-none`}
           />
