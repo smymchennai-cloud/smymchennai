@@ -18,6 +18,7 @@ import {
   bulandiRegistrationUpiQrUrl,
 } from '../../data/bulandi2026Data';
 import { BANK_DETAILS, GENDER_OPTIONS } from '../../constants/formOptions';
+import { sendBulandiWhapiConfirmation } from '../../utils/bulandiWhapiNotify';
 
 const TEN_DIGIT_PHONE = /^\d{10}$/;
 
@@ -411,7 +412,24 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
         throw new Error('No BR number returned from the server.');
       }
 
-      onRegistered(String(data.brNumber));
+      const br = String(data.brNumber);
+      const whatsappTarget =
+        data.whatsappNo != null && String(data.whatsappNo).trim() !== ''
+          ? String(data.whatsappNo).trim()
+          : phone;
+      const dobForWhapi =
+        data.dob != null && String(data.dob).trim() !== '' ? String(data.dob).trim() : dob;
+
+      onRegistered(br);
+
+      void sendBulandiWhapiConfirmation({
+        whatsappNo: whatsappTarget,
+        brNumber: br,
+        name: name.trim(),
+        dob: dobForWhapi,
+      }).catch((err) => {
+        console.warn('[Bulandi] WhatsApp confirmation failed:', err);
+      });
     } catch (err) {
       setSubmitError(err?.message || 'Something went wrong. Please try again.');
     } finally {
