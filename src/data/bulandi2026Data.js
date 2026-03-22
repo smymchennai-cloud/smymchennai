@@ -71,7 +71,7 @@ export const bulandiSubEvents = [
     id: 'car-racing-u15',
     name: 'Car Racing',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
       'Eligibility: under 15 years as on the age cut-off date announced by SMYM.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nFormat, equipment, track rules, and safety guidelines will be shared by the coordinators.',
@@ -82,7 +82,7 @@ export const bulandiSubEvents = [
     id: 'solo-dance-u15',
     name: 'Solo Dance',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nDuration, music submission, costume, and stage rules will be published in the detailed circular.',
@@ -93,7 +93,7 @@ export const bulandiSubEvents = [
     id: 'story-telling-sacred-u15',
     name: 'Story Telling (Sacred Narratives)',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nStories should draw from sacred / devotional narratives as briefed by the jury. Time limit, language, and presentation format will be confirmed by the organising team.',
@@ -104,7 +104,7 @@ export const bulandiSubEvents = [
     id: 'sudoku-challenge-u15',
     name: 'Sudoku Challenge',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nDifficulty tiers, time limits, and tie-breakers will be specified at the event. No external aids unless notified.',
@@ -115,7 +115,7 @@ export const bulandiSubEvents = [
     id: 'tote-bag-designing-u15',
     name: 'Tote Bag Designing',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nMaterials, theme, duration, and submission/display rules will be shared before the competition.',
@@ -126,7 +126,7 @@ export const bulandiSubEvents = [
     id: 'hindi-handwriting-u15',
     name: 'Hindi Handwriting',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nScript style, passage, duration, and paper rules will be notified by coordinators. Neatness, formation, and consistency will guide judging.',
@@ -137,7 +137,7 @@ export const bulandiSubEvents = [
     id: 'masterchef-solo-u15',
     name: 'Masterchef Solo',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nDish scope, ingredients, kitchen safety, time limit, and judging criteria (taste, presentation, hygiene) will be defined in the event brief. Parent / guardian supervision rules if any will be specified.',
@@ -148,7 +148,7 @@ export const bulandiSubEvents = [
     id: 'fashion-show-u15',
     name: 'Fashion Show',
     ageGroup: 'under15',
-    ageGroupLabel: 'Under 15 years',
+    ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nTheme, walk timing, music, team size, and dress code (modest, community-appropriate) will follow the coordinator circular.',

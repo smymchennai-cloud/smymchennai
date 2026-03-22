@@ -122,12 +122,24 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
                     </div>
                     <div className="mt-4 flex gap-2">
                       {event.detailsPath ? (
-                        <a
-                          href={event.detailsPath}
-                          className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm text-center"
-                        >
-                          View Details
-                        </a>
+                        event.name === 'Bulandi 2026' ? (
+                          <a
+                            href={event.detailsPath}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 shadow-sm"
+                          >
+                            Register Now
+                            <ChevronRight className="ml-1 w-4 h-4" />
+                          </a>
+                        ) : (
+                          <a
+                            href={event.detailsPath}
+                            className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm text-center"
+                          >
+                            View Details
+                          </a>
+                        )
                       ) : event.flyer ? (
                         <button
                           onClick={() => onViewFlyer(event)}

@@ -22,32 +22,20 @@ import { sendBulandiWhapiConfirmation } from '../../utils/bulandiWhapiNotify';
 
 const TEN_DIGIT_PHONE = /^\d{10}$/;
 
-/** Age cut-off for Bulandi 2026 main registration (local calendar date). */
-const BULANDI_DOB_REFERENCE = new Date(2026, 4, 3); // 3 May 2026
-/** Latest valid DOB (inclusive): born on this date is 6+ on the reference date. */
-const BULANDI_DOB_MAX = '2020-05-03';
+/** Bulandi main registration DOB: strictly before 3 May 2021 (picker max = 2 May 2021). */
+const BULANDI_REG_DOB_INPUT_MIN = '1900-01-01';
+const BULANDI_REG_DOB_INPUT_MAX = '2021-05-02';
 
-const getAgeOnBulandiReference = (dobYyyyMmDd) => {
-  if (!dobYyyyMmDd || typeof dobYyyyMmDd !== 'string') return null;
-  const parts = dobYyyyMmDd.split('-').map(Number);
-  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null;
+function isValidCalendarDobYyyyMmDd(v) {
+  if (!v || typeof v !== 'string') return false;
+  const parts = v.split('-').map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return false;
   const [by, bm, bd] = parts;
   const birth = new Date(by, bm - 1, bd);
-  if (
-    birth.getFullYear() !== by ||
-    birth.getMonth() !== bm - 1 ||
-    birth.getDate() !== bd
-  ) {
-    return null;
-  }
-  const ref = BULANDI_DOB_REFERENCE;
-  let age = ref.getFullYear() - birth.getFullYear();
-  const monthDiff = ref.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && ref.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
-};
+  return (
+    birth.getFullYear() === by && birth.getMonth() === bm - 1 && birth.getDate() === bd
+  );
+}
 
 /** Stricter than a single regex: local part, domain labels, and TLD length. */
 const isValidEmailFormat = (raw) => {
@@ -85,10 +73,9 @@ const bulandiRegFieldError = {
   gender: (v) => (!v ? 'Please select gender.' : undefined),
   dob: (v) => {
     if (!v) return 'Date of birth is required.';
-    const age = getAgeOnBulandiReference(v);
-    if (age === null) return 'Enter a valid date of birth.';
-    if (age <= 5) {
-      return 'You must be more than 5 years old as on 3 May 2026 to register.';
+    if (!isValidCalendarDobYyyyMmDd(v)) return 'Enter a valid date of birth.';
+    if (v < BULANDI_REG_DOB_INPUT_MIN || v > BULANDI_REG_DOB_INPUT_MAX) {
+      return 'Date of birth must be before 3 May 2021.';
     }
     return undefined;
   },
@@ -194,12 +181,12 @@ const RulesModal = ({ event, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="rules-modal-title"
@@ -578,20 +565,17 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
               <label htmlFor="bulandi-reg-dob" className="block text-sm font-semibold text-gray-800">
                 Date of birth <span className="text-red-600">*</span>
               </label>
-              <p className="mt-1 text-xs text-gray-600">
-                You must be <strong className="text-gray-800">more than 5 years</strong> old as on{' '}
-                <strong className="text-gray-800">3 May 2026</strong>.
-              </p>
               <input
                 id="bulandi-reg-dob"
                 type="date"
-                max={BULANDI_DOB_MAX}
-                min="1900-01-01"
+                min={BULANDI_REG_DOB_INPUT_MIN}
+                max={BULANDI_REG_DOB_INPUT_MAX}
                 value={dob}
                 onChange={(e) => {
                   const v = e.target.value;
                   setDob(v);
-                  maybeRevalidate('dob', v);
+                  setTouched((t) => ({ ...t, dob: true }));
+                  applyFieldError('dob', v);
                 }}
                 onBlur={(e) => {
                   setTouched((t) => ({ ...t, dob: true }));
@@ -1043,7 +1027,13 @@ const Bulandi2026Page = () => {
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 shrink-0" aria-hidden />
                 Under 15 years
               </h3>
-              <p className="text-xs text-gray-600 mt-1.5 pl-0.5">Eight competitions</p>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1.5 pl-0.5 leading-relaxed">
+                This category is for participants who are{' '}
+                <strong className="font-semibold text-gray-800">over five years of age</strong> and{' '}
+                <strong className="font-semibold text-gray-800">under fifteen years of age</strong>, determined
+                as on the official Bulandi 2026 age reference date.{' '}
+                <span className="text-gray-500">Eight competitions.</span>
+              </p>
             </header>
             {renderEventList(eventsUnder15)}
           </section>

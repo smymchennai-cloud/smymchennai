@@ -71,7 +71,7 @@ const App = () => {
       />
 
       {/* Hero Section */}
-      <HeroSection scrollToSection={scrollToSection} />
+      <HeroSection />
 
       {/* About Section */}
       <AboutSection />
