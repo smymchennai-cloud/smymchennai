@@ -24,12 +24,6 @@ export const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-// Validate age (18-40) for events
-export const isValidAge = (age) => {
-  const ageNum = parseInt(age);
-  return !isNaN(ageNum) && ageNum >= 18 && ageNum <= 40;
-};
-
 // Get today's date in YYYY-MM-DD format
 export const getTodayDate = () => {
   return new Date().toISOString().split('T')[0];
