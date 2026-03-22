@@ -83,6 +83,7 @@ const App = () => {
       {/* Events Section */}
       <EventsSection 
         onViewFlyer={setSelectedEventFlyer}
+        onOpenRegistration={() => scrollToSection('register')}
       />
 
       {/* Team Section */}

@@ -38,7 +38,7 @@ const getEventStatusStyle = (status) => {
   }
 };
 
-const EventsSection = ({ onViewFlyer }) => {
+const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
   return (
     <section id="events" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-orange-50">
       <div className="max-w-7xl mx-auto">
@@ -142,12 +142,23 @@ const EventsSection = ({ onViewFlyer }) => {
                         )
                       ) : event.flyer ? (
                         <button
+                          type="button"
                           onClick={() => onViewFlyer(event)}
                           className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm"
                         >
                           View Details
                         </button>
                       ) : null}
+                      {event.name === 'Temple Run 2.0' && onOpenRegistration && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenRegistration(event)}
+                          className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700"
+                        >
+                          Register Now
+                          <ChevronRight className="ml-1 w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
