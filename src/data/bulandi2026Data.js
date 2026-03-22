@@ -196,6 +196,19 @@ export const bulandiSubEvents = [
     resultsUrl: '',
   },
   {
+    id: 'hindi-handwriting-u15',
+    name: 'Hindi Handwriting',
+    ageGroup: 'under15',
+    ageGroupLabel: 'Over 5 and under 15 years',
+    prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Handwriting competition—script, passage, duration, and judging follow the coordinator circular.',
+    rules:
+      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nScript style, passage, duration, and paper rules will be notified by coordinators. Neatness, formation, and consistency will guide judging.',
+    registrationUrl: '',
+    resultsUrl: '',
+  },
+  {
     id: 'masterchef-solo-u15',
     name: 'Masterchef Solo (without fire)',
     ageGroup: 'under15',
