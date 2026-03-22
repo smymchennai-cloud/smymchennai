@@ -102,11 +102,21 @@ const bulandiRegFieldError = {
   paymentFile: (f) => (!f ? 'Payment screenshot is required.' : undefined),
 };
 
-const generateBulandiRegistrationNumber = () => {
-  const y = new Date().getFullYear();
-  const n = Math.floor(100000 + Math.random() * 900000);
-  return `BR-${y}-${n}`;
-};
+const readFileAsBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== 'string') {
+        reject(new Error('Could not read payment screenshot.'));
+        return;
+      }
+      const comma = result.indexOf(',');
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () => reject(new Error('Could not read payment screenshot.'));
+    reader.readAsDataURL(file);
+  });
 
 const parsePrizeTiers = (prizes) => {
   if (!prizes || typeof prizes !== 'string') return null;
@@ -276,6 +286,8 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -300,6 +312,8 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
       setErrors({});
       setTouched({});
       setAttemptedSubmit(false);
+      setSubmitting(false);
+      setSubmitError('');
     }
   }, [open]);
 
@@ -324,8 +338,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError('');
     setAttemptedSubmit(true);
     const next = {};
     const fields = [
@@ -343,7 +358,65 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
     }
     setErrors(next);
     if (Object.keys(next).length > 0) return;
-    onRegistered(generateBulandiRegistrationNumber());
+
+    const webAppUrl = (bulandi2026Meta.registrationWebAppUrl || '').trim();
+    if (!webAppUrl) {
+      setSubmitError(
+        'Registration is not configured. Set registrationWebAppUrl in src/data/bulandi2026Data.js (Google Apps Script web app URL).'
+      );
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const paymentFileBase64 = await readFileAsBase64(paymentFile);
+      const safeName = paymentFile.name.replace(/[^\w.\- ]+/g, '_').slice(0, 180);
+      const payload = {
+        name: name.trim(),
+        whatsappNo: phone,
+        phoneAlternate: phoneAlt.trim(),
+        gender,
+        dob,
+        mail: email.trim(),
+        paymentFileName: safeName || 'payment.jpg',
+        paymentMimeType: paymentFile.type || 'image/jpeg',
+        paymentFileBase64,
+      };
+      const regSecret = (bulandi2026Meta.registrationSubmitSecret || '').trim();
+      if (regSecret) {
+        payload.secret = regSecret;
+      }
+
+      const res = await fetch(webAppUrl, {
+        method: 'POST',
+        mode: 'cors',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      });
+
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(
+          'Unexpected server response. Check the Apps Script deployment URL and that the script is deployed as a web app.'
+        );
+      }
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Registration failed.');
+      }
+      if (!data.brNumber) {
+        throw new Error('No BR number returned from the server.');
+      }
+
+      onRegistered(String(data.brNumber));
+    } catch (err) {
+      setSubmitError(err?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!open) return null;
@@ -606,12 +679,18 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
             </div>
           </div>
 
-          <div className="border-t border-gray-100 bg-white p-4 sm:p-5 shrink-0">
+          <div className="border-t border-gray-100 bg-white p-4 sm:p-5 shrink-0 space-y-3">
+            {submitError && (
+              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
+                {submitError}
+              </p>
+            )}
             <button
               type="submit"
-              className="w-full rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 py-3.5 text-base font-extrabold text-white shadow-lg shadow-red-600/30 transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+              disabled={submitting}
+              className="w-full rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 py-3.5 text-base font-extrabold text-white shadow-lg shadow-red-600/30 transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
             >
-              Submit
+              {submitting ? 'Submitting…' : 'Submit'}
             </button>
           </div>
         </form>

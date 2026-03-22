@@ -1,6 +1,6 @@
 /**
  * Bulandi 2026 — main registration + sub-events.
- * Set mainRegistrationUrl, scheduleUrl, workshopRegistrationUrl, per-event registrationUrl and resultsUrl when live.
+ * Set mainRegistrationUrl, scheduleUrl, workshopRegistrationUrl, registrationWebAppUrl, per-event URLs when live.
  */
 
 export const bulandi2026Meta = {
@@ -12,6 +12,13 @@ export const bulandi2026Meta = {
   scheduleUrl: '',
   /** External form or page for Bulandi workshops — empty until live */
   workshopRegistrationUrl: '',
+  /**
+   * Google Apps Script web app URL for the Bulandi registration form (POST). Must end with `/exec`.
+   * Paste the URL from Apps Script → Deploy → Web app.
+   */
+  registrationWebAppUrl: 'https://script.google.com/macros/s/AKfycbzTQ3HKaFeBfZNbwCIZh0eDORkdku7k0iSqag3IWZWv5XsxQaZSJF5wvIQGdOEtoV0Q/exec',
+  /** Optional — if set in Apps Script as SUBMIT_SECRET, use the same value here */
+  registrationSubmitSecret: '',
 };
 
 /**
