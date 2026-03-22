@@ -10,10 +10,6 @@ export { default as TeamSection } from './sections/TeamSection';
 export { default as GallerySection } from './sections/GallerySection';
 export { default as RegisterSection } from './sections/RegisterSection';
 
-// Form Components
-export { default as MemberRegistrationForm } from './forms/MemberRegistrationForm';
-export { default as TempleRunForm } from './forms/TempleRunForm';
-
 // Modal Components
 export { default as GalleryModal } from './modals/GalleryModal';
 export { default as EventFlyerModal } from './modals/EventFlyerModal';
