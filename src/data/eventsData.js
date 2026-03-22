@@ -2,16 +2,6 @@
 export const upcomingEvents = [
   {
     id: 1,
-    name: 'Quietly Powerful',
-    date: '2026-03-08',
-    time: '4PM to 7PM',
-    venue: 'Shenoy Nagar',
-    description: 'Special event celebrating International Women\'s Day',
-    status: 'Registrations Closed',
-    flyer: '/photos/quietly-powerful.png'
-  },
-  {
-    id: 2,
     name: 'Temple Run 2.0',
     date: '2026-04-04',
     time: '2 Days (Pradakshina)',
@@ -21,7 +11,7 @@ export const upcomingEvents = [
     flyer: '/photos/Temple-run2.0.png'
   },
   {
-    id: 3,
+    id: 2,
     name: 'Vispott',
     date: "TBD",
     time: "TBD",
@@ -54,6 +44,14 @@ export const upcomingEvents = [
 
 // Past Events
 export const pastEvents = [
+  { 
+    name: 'Quietly Powerful', 
+    date: '2026-03-08', 
+    attendees: 33,
+    description: 'Special event celebrating International Women\'s Day at Shenoy Nagar (4PM–7PM).',
+    coordinator: 'Priyanka Mantri & Alka Rathi',
+    specialMention: 'Kriti Suda for running the workshop'
+  },
   { 
     name: 'Turtle Trail', 
     date: '2026-02-21', 
