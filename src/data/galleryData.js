@@ -1,6 +1,22 @@
 // Gallery Albums - ordered by past events timeline (newest first)
 export const galleryAlbums = [
   {
+    id: 13,
+    title: 'Quietly Powerful',
+    folder: 'Quietly-Powerful',
+    category: 'Celebration',
+    description: 'International Women\'s Day at Shenoy Nagar — resin art workshop, felicitation & LifeCell awareness session',
+    date: '2026-03-08',
+    photos: [
+      '/Gallery/Quietly-Powerful/1.jpeg',
+      '/Gallery/Quietly-Powerful/2.jpeg',
+      '/Gallery/Quietly-Powerful/3.jpeg',
+      '/Gallery/Quietly-Powerful/4.jpeg',
+      '/Gallery/Quietly-Powerful/5.jpeg',
+      '/Gallery/Quietly-Powerful/6.jpeg'
+    ]
+  },
+  {
     id: 1,
     title: 'Turtle Trail',
     folder: 'TurtleTrail',
