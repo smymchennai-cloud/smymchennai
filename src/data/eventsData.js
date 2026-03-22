@@ -47,10 +47,10 @@ export const pastEvents = [
   { 
     name: 'Quietly Powerful', 
     date: '2026-03-08', 
-    attendees: 33,
-    description: 'Special event celebrating International Women\'s Day at Shenoy Nagar (4PM–7PM).',
-    coordinator: 'Priyanka Mantri & Alka Rathi',
-    specialMention: 'Kriti Suda for running the workshop'
+    attendees: 80,
+    description: 'The Women\'s Day celebration Quietly Powerful at Shenoy Nagar turned into a warm and meaningful evening, beginning with a vibrant Resin Art workshop by Smt. Kriti Suda, where nearly 40 ladies explored their creative side. The highlight was the felicitation of Smt. Vimala Damani, a dynamic and visionary personality. The evening also featured an insightful awareness session in collaboration with LifeCell, where Smt. Srirekha shared perspectives on Stem Cell Science & Future Health Preparedness.',
+    coordinator: 'Alka Rathi & Priyanka Mantri',
+    specialMention: 'Smt. Vimala Damani'
   },
   { 
     name: 'Turtle Trail', 
