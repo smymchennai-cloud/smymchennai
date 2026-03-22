@@ -22,8 +22,8 @@ import { sendBulandiWhapiConfirmation } from '../../utils/bulandiWhapiNotify';
 
 const TEN_DIGIT_PHONE = /^\d{10}$/;
 
-/** Bulandi main registration DOB: strictly before 3 May 2021 (picker max = 2 May 2021). */
 const BULANDI_REG_DOB_INPUT_MIN = '1900-01-01';
+/** Last selectable day strictly before 3 May 2021 (inclusive). */
 const BULANDI_REG_DOB_INPUT_MAX = '2021-05-02';
 
 function isValidCalendarDobYyyyMmDd(v) {
@@ -35,6 +35,21 @@ function isValidCalendarDobYyyyMmDd(v) {
   return (
     birth.getFullYear() === by && birth.getMonth() === bm - 1 && birth.getDate() === bd
   );
+}
+
+/** DOB checks for Bulandi: before 3 May 2021; run on change/blur in the field (submit still blocks tampering). */
+function getBulandiDobFieldError(raw) {
+  const s = raw == null ? '' : String(raw).trim();
+  if (!s) return 'Date of birth is required.';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return 'Enter a valid date of birth.';
+  if (!isValidCalendarDobYyyyMmDd(s)) return 'Enter a valid date of birth.';
+  if (s < BULANDI_REG_DOB_INPUT_MIN) {
+    return 'Date of birth must be on or after 1 January 1900.';
+  }
+  if (s > BULANDI_REG_DOB_INPUT_MAX) {
+    return 'Date of birth must be before 3 May 2021.';
+  }
+  return undefined;
 }
 
 /** Stricter than a single regex: local part, domain labels, and TLD length. */
@@ -71,14 +86,7 @@ const bulandiRegFieldError = {
     return !TEN_DIGIT_PHONE.test(t) ? 'Alternative number must be 10 digits.' : undefined;
   },
   gender: (v) => (!v ? 'Please select gender.' : undefined),
-  dob: (v) => {
-    if (!v) return 'Date of birth is required.';
-    if (!isValidCalendarDobYyyyMmDd(v)) return 'Enter a valid date of birth.';
-    if (v < BULANDI_REG_DOB_INPUT_MIN || v > BULANDI_REG_DOB_INPUT_MAX) {
-      return 'Date of birth must be before 3 May 2021.';
-    }
-    return undefined;
-  },
+  dob: (v) => getBulandiDobFieldError(v),
   email: (v) => {
     const t = v.trim();
     if (!t) return 'Email is required.';
@@ -272,8 +280,6 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
   const [email, setEmail] = useState('');
   const [paymentFile, setPaymentFile] = useState(null);
   const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
@@ -298,8 +304,6 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
       setEmail('');
       setPaymentFile(null);
       setErrors({});
-      setTouched({});
-      setAttemptedSubmit(false);
       setSubmitting(false);
       setSubmitError('');
     }
@@ -315,21 +319,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
     });
   };
 
-  const maybeRevalidate = (field, value) => {
-    setErrors((prev) => {
-      if (!touched[field] && !attemptedSubmit) return prev;
-      const msg = bulandiRegFieldError[field](value);
-      const next = { ...prev };
-      if (msg) next[field] = msg;
-      else delete next[field];
-      return next;
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
-    setAttemptedSubmit(true);
     const next = {};
     const fields = [
       ['name', name],
@@ -344,6 +336,7 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
       const msg = bulandiRegFieldError[key](val);
       if (msg) next[key] = msg;
     }
+
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
@@ -467,12 +460,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 onChange={(e) => {
                   const v = e.target.value;
                   setName(v);
-                  maybeRevalidate('name', v);
+                  applyFieldError('name', v);
                 }}
-                onBlur={(e) => {
-                  setTouched((t) => ({ ...t, name: true }));
-                  applyFieldError('name', e.target.value);
-                }}
+                onBlur={(e) => applyFieldError('name', e.target.value)}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.name ? 'true' : 'false'}
               />
@@ -494,12 +484,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, '').slice(0, 10);
                   setPhone(v);
-                  maybeRevalidate('phone', v);
+                  applyFieldError('phone', v);
                 }}
-                onBlur={(e) => {
-                  setTouched((t) => ({ ...t, phone: true }));
-                  applyFieldError('phone', e.target.value);
-                }}
+                onBlur={(e) => applyFieldError('phone', e.target.value)}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm tabular-nums focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.phone ? 'true' : 'false'}
               />
@@ -521,12 +508,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, '').slice(0, 10);
                   setPhoneAlt(v);
-                  maybeRevalidate('phoneAlt', v);
+                  applyFieldError('phoneAlt', v);
                 }}
-                onBlur={(e) => {
-                  setTouched((t) => ({ ...t, phoneAlt: true }));
-                  applyFieldError('phoneAlt', e.target.value);
-                }}
+                onBlur={(e) => applyFieldError('phoneAlt', e.target.value)}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm tabular-nums focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.phoneAlt ? 'true' : 'false'}
               />
@@ -543,12 +527,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 onChange={(e) => {
                   const v = e.target.value;
                   setGender(v);
-                  maybeRevalidate('gender', v);
+                  applyFieldError('gender', v);
                 }}
-                onBlur={(e) => {
-                  setTouched((t) => ({ ...t, gender: true }));
-                  applyFieldError('gender', e.target.value);
-                }}
+                onBlur={(e) => applyFieldError('gender', e.target.value)}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.gender ? 'true' : 'false'}
               >
@@ -574,13 +555,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 onChange={(e) => {
                   const v = e.target.value;
                   setDob(v);
-                  setTouched((t) => ({ ...t, dob: true }));
                   applyFieldError('dob', v);
                 }}
-                onBlur={(e) => {
-                  setTouched((t) => ({ ...t, dob: true }));
-                  applyFieldError('dob', e.target.value);
-                }}
+                onBlur={(e) => applyFieldError('dob', e.target.value)}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.dob ? 'true' : 'false'}
               />
@@ -599,12 +576,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 onChange={(e) => {
                   const v = e.target.value;
                   setEmail(v);
-                  maybeRevalidate('email', v);
+                  applyFieldError('email', v);
                 }}
-                onBlur={(e) => {
-                  setTouched((t) => ({ ...t, email: true }));
-                  applyFieldError('email', e.target.value);
-                }}
+                onBlur={(e) => applyFieldError('email', e.target.value)}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.email ? 'true' : 'false'}
               />
@@ -666,13 +640,9 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                   onChange={(e) => {
                     const f = e.target.files?.[0] ?? null;
                     setPaymentFile(f);
-                    setTouched((t) => ({ ...t, paymentFile: true }));
                     applyFieldError('paymentFile', f);
                   }}
-                  onBlur={() => {
-                    setTouched((t) => ({ ...t, paymentFile: true }));
-                    applyFieldError('paymentFile', paymentFile);
-                  }}
+                  onBlur={() => applyFieldError('paymentFile', paymentFile)}
                   className="mt-1.5 block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-red-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-red-700"
                   aria-invalid={errors.paymentFile ? 'true' : 'false'}
                 />
