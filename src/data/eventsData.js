@@ -38,7 +38,8 @@ export const upcomingEvents = [
     venue: 'TBA',
     description: 'Annual cultural extravaganza celebrating youth talent and community spirit',
     status: 'Save the Date',
-    flyer: null
+    flyer: null,
+    detailsPath: '/bulandi-2026'
   }
 ];
 

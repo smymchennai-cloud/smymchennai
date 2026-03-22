@@ -121,14 +121,21 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
                       </div>
                     </div>
                     <div className="mt-4 flex gap-2">
-                      {event.flyer && (
+                      {event.detailsPath ? (
+                        <a
+                          href={event.detailsPath}
+                          className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm text-center"
+                        >
+                          View Details
+                        </a>
+                      ) : event.flyer ? (
                         <button
                           onClick={() => onViewFlyer(event)}
                           className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm"
                         >
                           View Details
                         </button>
-                      )}
+                      ) : null}
                       {event.name === 'Temple Run 2.0' && (
                         <button
                           onClick={() => onOpenRegistration(event)}

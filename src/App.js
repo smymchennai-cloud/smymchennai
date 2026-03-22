@@ -13,9 +13,12 @@ import {
   EventRegistrationDrawer
 } from './components';
 import MemberRegistrationPage from './components/pages/MemberRegistrationPage';
+import Bulandi2026Page from './components/pages/Bulandi2026Page';
 
 const App = () => {
-  const isMemberRegistrationPage = window.location.pathname === '/member-registration';
+  const path = window.location.pathname;
+  const isMemberRegistrationPage = path === '/member-registration';
+  const isBulandi2026Page = path === '/bulandi-2026';
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
@@ -51,6 +54,10 @@ const App = () => {
 
   if (isMemberRegistrationPage) {
     return <MemberRegistrationPage />;
+  }
+
+  if (isBulandi2026Page) {
+    return <Bulandi2026Page />;
   }
 
   return (
