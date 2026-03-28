@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   BadgeCheck,
@@ -57,6 +57,19 @@ function getBulandiDobFieldError(raw) {
     return 'Date of birth must be before 3 May 2021.';
   }
   return undefined;
+}
+
+/**
+ * Clamp yyyy-mm-dd into Bulandi main-registration bounds. Mobile date pickers often ignore min/max;
+ * this keeps the value consistent with desktop.
+ */
+function clampBulandiRegistrationDobValue(raw) {
+  const s = raw == null ? '' : String(raw).trim();
+  if (!s) return '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || !isValidCalendarDobYyyyMmDd(s)) return s;
+  if (s < BULANDI_REG_DOB_INPUT_MIN) return BULANDI_REG_DOB_INPUT_MIN;
+  if (s > BULANDI_REG_DOB_INPUT_MAX) return BULANDI_REG_DOB_INPUT_MAX;
+  return s;
 }
 
 /** Stricter than a single regex: local part, domain labels, and TLD length. */
@@ -656,11 +669,15 @@ const BulandiRegistrationDrawer = ({ open, onClose, onRegistered }) => {
                 max={BULANDI_REG_DOB_INPUT_MAX}
                 value={dob}
                 onChange={(e) => {
-                  const v = e.target.value;
+                  const v = clampBulandiRegistrationDobValue(e.target.value);
                   setDob(v);
                   applyFieldError('dob', v);
                 }}
-                onBlur={(e) => applyFieldError('dob', e.target.value)}
+                onBlur={(e) => {
+                  const v = clampBulandiRegistrationDobValue(e.target.value);
+                  if (v !== e.target.value) setDob(v);
+                  applyFieldError('dob', v);
+                }}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                 aria-invalid={errors.dob ? 'true' : 'false'}
               />
@@ -784,6 +801,14 @@ const BULANDI_PAGE_TABS = [
   { id: 'sponsors', label: 'Sponsors' },
 ];
 
+const BULANDI_VALID_TAB_IDS = new Set(BULANDI_PAGE_TABS.map((t) => t.id));
+
+function readBulandiTabFromHash() {
+  if (typeof window === 'undefined') return 'bulandi-registration';
+  const raw = window.location.hash.replace(/^#/, '').trim();
+  return BULANDI_VALID_TAB_IDS.has(raw) ? raw : 'bulandi-registration';
+}
+
 /** Portrait + name; optional website link. */
 const SponsorPersonCard = ({ entry, size = 'grid' }) => {
   const { name, imageUrl, websiteUrl } = entry;
@@ -836,7 +861,16 @@ const SponsorPersonCard = ({ entry, size = 'grid' }) => {
 
 const Bulandi2026Page = () => {
   const [rulesEvent, setRulesEvent] = useState(null);
-  const [activeTab, setActiveTab] = useState('bulandi-registration');
+  const [activeTab, setActiveTab] = useState(readBulandiTabFromHash);
+
+  const activateBulandiTab = useCallback((tabId) => {
+    if (!BULANDI_VALID_TAB_IDS.has(tabId)) return;
+    setActiveTab(tabId);
+    if (typeof window !== 'undefined') {
+      const { pathname, search } = window.location;
+      window.history.replaceState(null, '', `${pathname}${search}#${tabId}`);
+    }
+  }, []);
   const [registrationDrawerOpen, setRegistrationDrawerOpen] = useState(false);
   const [brConfirmNumber, setBrConfirmNumber] = useState(null);
 
@@ -863,6 +897,12 @@ const Bulandi2026Page = () => {
     setEventRegSubmitError('');
     setEventRegSubmitting(false);
   }, [eventRegBr, eventRegDob]);
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTab(readBulandiTabFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const handleEventRegVerify = async () => {
     setEventRegError('');
@@ -1077,7 +1117,7 @@ const Bulandi2026Page = () => {
                   aria-selected={selected}
                   aria-controls={tab.id}
                   tabIndex={0}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => activateBulandiTab(tab.id)}
                   className={`min-h-[48px] rounded-xl px-4 py-3 text-center text-sm sm:text-base font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
                     selected
                       ? 'bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white shadow-lg shadow-red-600/35'
@@ -1197,7 +1237,8 @@ const Bulandi2026Page = () => {
             Event Registration
           </h2>
           <p className="w-full text-sm sm:text-base text-gray-600 mb-6 lg:mb-8">
-            Enter your <strong>BR number</strong> and <strong>date of birth</strong>, tap{' '}
+            If you have registered for Bulandi, you can find your <strong>BR number</strong> in your registration
+            confirmation email. Enter your BR number and <strong>date of birth</strong>, tap{' '}
             <strong>Validate details</strong>, then pick competitions and <strong>Submit</strong>. Use{' '}
             <strong>Rules and regulations</strong> on a row for that event’s full rules.
           </p>

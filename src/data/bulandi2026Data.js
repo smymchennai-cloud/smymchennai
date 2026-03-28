@@ -51,6 +51,20 @@ export const bulandi2026Meta = {
   eventRegistrationSheetFetchUrl: BULANDI_WEB_APP_BROWSER_URL,
 };
 
+/** App route for the Bulandi 2026 page (must match `App.js`). */
+export const BULANDI_2026_PATH = '/bulandi-2026';
+
+/**
+ * Deep links: same page, tab from the hash. Bulandi2026Page reads `location.hash` on load and on `hashchange`.
+ * Use these `href` values in emails, WhatsApp, Events, etc.
+ */
+export const BULANDI_2026_LINKS = {
+  bulandiRegistration: `${BULANDI_2026_PATH}#bulandi-registration`,
+  eventRegistration: `${BULANDI_2026_PATH}#event-registration`,
+  workshopRegistration: `${BULANDI_2026_PATH}#workshop-registration`,
+  sponsors: `${BULANDI_2026_PATH}#sponsors`,
+};
+
 /**
  * UPI QR for Bulandi main registration (PNG/WebP in `public/`). Leave empty to show a short note instead of an image.
  * Example: `'/bulandi-upi-qr.png'`

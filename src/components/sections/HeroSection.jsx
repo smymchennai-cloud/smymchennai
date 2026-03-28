@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { BULANDI_2026_LINKS } from '../../data/bulandi2026Data';
 
 const HeroSection = () => {
   return (
@@ -39,7 +40,7 @@ const HeroSection = () => {
           </button>
 
           <a
-            href="/bulandi-2026"
+            href={BULANDI_2026_LINKS.bulandiRegistration}
             className="inline-flex items-center justify-center bg-gradient-to-r from-red-600 to-rose-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-50/90"
           >
             Join Bulandi 2026
