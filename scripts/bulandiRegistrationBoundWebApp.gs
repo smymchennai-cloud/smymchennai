@@ -15,7 +15,7 @@
  * Website: set BOTH registrationWebAppUrl and eventRegistrationSheetFetchUrl in bulandi2026Data.js to this same /exec URL.
  *
  * POST JSON with action "eventRegistration" to update event columns for an existing row (matched by BR + DOB):
- *   { "action":"eventRegistration", "br":"BR-1520", "dob":"2015-06-01",
+ *   { "action":"eventRegistration", "br":"BR1520", "dob":"2015-06-01",
  *     "eligibleEventNames":["Car Race","Solo Dance",...],
  *     "selectedEventNames":["Car Race","GK Crossword"],
  *     "secret":"..." }   // secret only if SUBMIT_SECRET is set in this script
@@ -572,9 +572,8 @@ function nextBrNumber_(pool) {
     var values = sheet.getRange(2, 1, lastRow, 1).getValues();
     for (var i = 0; i < values.length; i++) {
       var cell = String(values[i][0] || '');
-      var m = cell.match(/^BR-(\d+)$/i);
-      if (!m) continue;
-      var n = parseInt(m[1], 10);
+      var n = parseBrNumeric_(cell);
+      if (n == null) continue;
       if (pool === 'u15') {
         if (n >= BR_U15_MIN && n <= BR_U15_MAX && n > maxNum) maxNum = n;
       } else {
@@ -585,11 +584,11 @@ function nextBrNumber_(pool) {
 
   var next = maxNum + 1;
   if (pool === 'u15') {
-    if (next > BR_U15_MAX) throw new Error('Under-15 BR range full (BR-' + BR_U15_MIN + '-BR-' + BR_U15_MAX + ')');
+    if (next > BR_U15_MAX) throw new Error('Under-15 BR range full (BR' + BR_U15_MIN + '–BR' + BR_U15_MAX + ')');
   } else {
     if (next > BR_O15_MAX) throw new Error('15+ BR range full');
   }
-  return 'BR-' + next;
+  return 'BR' + next;
 }
 
 function sanitizeFilename_(name) {

@@ -308,7 +308,7 @@ export function findMatchingRegistrationRow(rows, headers, brInput, dobInput) {
   }
 
   const wantBr = parseBrNumeric(brInput);
-  if (wantBr == null) throw new Error('Enter a valid BR number (e.g. BR-1511 or 1511).');
+  if (wantBr == null) throw new Error('Enter a valid BR number (e.g. BR1511 or 1511).');
 
   const wantDob = normalizeDobToIso(dobInput);
   if (!wantDob || !/^\d{4}-\d{2}-\d{2}$/.test(wantDob)) {
