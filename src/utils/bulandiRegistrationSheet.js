@@ -370,11 +370,11 @@ export function preselectedEventIdsFromRegistrationRow(row, headers, events) {
 }
 
 /**
- * POST event choices to the bound Apps Script web app (`action: 'eventRegistration'`).
+ * POST JSON to the bound Bulandi Apps Script web app (registration, event choices, admin check-in, etc.).
  * @param {string} webAppUrl same `/exec` URL as main registration
  * @param {Record<string, unknown>} body includes optional `secret` when meta.registrationSubmitSecret is set
  */
-export async function postBulandiEventRegistration(webAppUrl, body) {
+export async function postBulandiWebApp(webAppUrl, body) {
   const url = (webAppUrl || '').trim();
   if (!url) throw new Error('Web app URL is not configured.');
 
@@ -396,7 +396,16 @@ export async function postBulandiEventRegistration(webAppUrl, body) {
   }
 
   if (!data.ok) {
-    throw new Error(data.error || 'Could not save event choices.');
+    throw new Error(data.error || 'Request failed.');
   }
   return data;
+}
+
+/**
+ * POST event choices (`action: 'eventRegistration'`).
+ * @param {string} webAppUrl same `/exec` URL as main registration
+ * @param {Record<string, unknown>} body includes optional `secret` when meta.registrationSubmitSecret is set
+ */
+export async function postBulandiEventRegistration(webAppUrl, body) {
+  return postBulandiWebApp(webAppUrl, body);
 }

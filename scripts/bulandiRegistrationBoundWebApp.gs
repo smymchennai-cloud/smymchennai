@@ -20,6 +20,20 @@
  *     "selectedEventNames":["Car Race","GK Crossword"],
  *     "secret":"..." }   // secret only if SUBMIT_SECRET is set in this script
  * For each eligible event column: writes "Yes" if selected, else "No". Column headers must match event names (same as the website).
+ * After a successful update, an email is sent to the row’s Mail/Email column (same layout family as main registration) listing
+ * events newly registered vs removed, if anything changed. Uses BULANDI_SEND_EMAIL; skipped if no delta or invalid email.
+ *
+ * Admin check-in (optional SUBMIT_SECRET same as other POSTs):
+ *   adminRegistrationDeskCheckIn — { "action","br","dob" } → writes check-in time in column ddMMyyyyregistered (no hyphens), e.g. 26072026registered.
+ *     Hyphens are stripped from br/dob in the JSON body. Legacy column dd-mm-yyyy-registered is still found if present.
+ *   adminBackstageCheckIn — { "action","br","dob","eventNames":["Solo Dance",…] } → timestamps in columns like “Backstage — Solo Dance”.
+ *   adminBackstageRowCheckIn — { "action","br","dob","eventName":"Solo Dance" } → timestamp in column dd-mm-yyyy-back-stage for today (creates column if missing). Verifies main event column Yes/TRUE.
+ *   adminBackstageEligibleList — { "action","eventName":"Solo Dance" } → { deskColumn, backstageColumn, participants:[{…,backstageCheckedInAt}], … }
+ *     backstageCheckedInAt is non-empty when today’s dd-mm-yyyy-back-stage cell has a timestamp.
+ *     Participants must have a non-empty value in today’s desk column (ddMMyyyyregistered or legacy dd-mm-yyyy-registered) and the main event column must be Yes / TRUE (checkbox).
+ *   adminOnStageRowCheckIn — writes dd-mm-yyyy-on-stage only if today’s dd-mm-yyyy-back-stage cell is set (back stage first).
+ *   adminOnStageEligibleList — participants must have today’s back-stage column set + event Yes/TRUE; includes onStageCheckedInAt (not desk column).
+ *   adminOnStageCheckIn — same with “On stage — …” per-event columns. Participant must be “Yes” on the main event column.
  *
  * GET (default): gviz JSON (no UrlFetchApp — SpreadsheetApp reads the bound sheet).
  * Row 1 of tab SHEET_NAME = headers (BR No, DOB, WhatsApp, Event list, …). Data from row 2.
@@ -44,9 +58,14 @@ var SUBMIT_SECRET = '';
 /** Confirmation email — sent via GmailApp from the account that owns this script (use smymchennai@gmail.com). */
 var BULANDI_EVENT_TITLE = 'Kanta J Narayan Rathi Bulandi 2026';
 var BULANDI_SENDER_NAME = 'SMYM Bulandi Chennai';
-/** Full URL to your Bulandi / events page; empty = no link in the email. */
+/** Full URL to your Bulandi / events page; empty = no extra link (event tab link below is always added when set). */
 var BULANDI_EVENTS_PAGE_URL = '';
-/** Set false to skip sending mail (e.g. while testing). */
+/**
+ * Direct link to the Event Registration tab on the site (shown in registration and event-choice emails).
+ * BR numbers in all emails use this format with no hyphens (e.g. BR1511).
+ */
+var BULANDI_EVENT_REGISTRATION_TAB_URL = 'https://smymchennai.in/bulandi-2026#event-registration';
+/** Set false to skip sending mail (e.g. while testing). Applies to registration confirmation and event-choice updates. */
 var BULANDI_SEND_EMAIL = true;
 
 function buildBulandiWhatsappBody_(registrantName, brNumber, dob, eventsUrl) {
@@ -125,6 +144,29 @@ function doPost(e) {
 
     if (String(body.action || '') === 'eventRegistration') {
       return handleEventRegistrationPost_(body);
+    }
+
+    var act = String(body.action || '');
+    if (act === 'adminRegistrationDeskCheckIn') {
+      return handleAdminRegistrationDeskCheckIn_(body);
+    }
+    if (act === 'adminBackstageEligibleList') {
+      return handleAdminBackstageEligibleList_(body);
+    }
+    if (act === 'adminBackstageRowCheckIn') {
+      return handleAdminBackstageRowCheckIn_(body);
+    }
+    if (act === 'adminOnStageEligibleList') {
+      return handleAdminOnStageEligibleList_(body);
+    }
+    if (act === 'adminOnStageRowCheckIn') {
+      return handleAdminOnStageRowCheckIn_(body);
+    }
+    if (act === 'adminBackstageCheckIn') {
+      return handleAdminEventCheckIn_(body, 'backstage');
+    }
+    if (act === 'adminOnStageCheckIn') {
+      return handleAdminEventCheckIn_(body, 'onstage');
     }
 
     var name = String(body.name || '').trim();
@@ -285,6 +327,173 @@ function findDobColumnKeyFromRow_(headerRow) {
   return null;
 }
 
+/** @param {Array} headerRow */
+function findNameColumnKeyFromRow_(headerRow) {
+  var headers = [];
+  for (var i = 0; i < headerRow.length; i++) {
+    headers.push(String(headerRow[i] || '').trim());
+  }
+  var lower = [];
+  for (var j = 0; j < headers.length; j++) {
+    lower.push(headers[j].toLowerCase());
+  }
+  var exact = ['name', 'full name', 'participant name', 'registrant name'];
+  for (var e = 0; e < exact.length; e++) {
+    for (var k = 0; k < lower.length; k++) {
+      if (lower[k] === exact[e]) return headers[k];
+    }
+  }
+  for (var k2 = 0; k2 < lower.length; k2++) {
+    if (lower[k2].indexOf('whatsapp') >= 0) continue;
+    if (lower[k2] === 'first name' || lower[k2] === 'last name') return headers[k2];
+    if (lower[k2].indexOf('participant') >= 0 && lower[k2].indexOf('name') >= 0) return headers[k2];
+  }
+  return null;
+}
+
+/** @param {Array} headerRow */
+function findMailColumnKeyFromRow_(headerRow) {
+  var headers = [];
+  for (var i = 0; i < headerRow.length; i++) {
+    headers.push(String(headerRow[i] || '').trim());
+  }
+  var lower = [];
+  for (var j = 0; j < headers.length; j++) {
+    lower.push(headers[j].toLowerCase());
+  }
+  var exact = ['mail', 'email', 'e-mail', 'e mail'];
+  for (var e = 0; e < exact.length; e++) {
+    for (var k = 0; k < lower.length; k++) {
+      if (lower[k] === exact[e]) return headers[k];
+    }
+  }
+  for (var k2 = 0; k2 < lower.length; k2++) {
+    if (lower[k2].indexOf('email') >= 0) return headers[k2];
+  }
+  return null;
+}
+
+/** First column index where header string equals key (exact trim match). */
+function findFirstColumnIndexForKey_(headerRow, key) {
+  if (!key) return -1;
+  for (var c = 0; c < headerRow.length; c++) {
+    if (String(headerRow[c] || '').trim() === key) return c;
+  }
+  return -1;
+}
+
+/**
+ * 1-based column index in row 1 whose header equals key (trim). Scans through sheet.getLastColumn().
+ * Use this for date-based headers (e.g. ddMMyyyyregistered): getDataRange() often omits columns that
+ * only have a header in row 1 with no data below, so headerRow from getValues() would miss them.
+ */
+function findColumn1BasedForHeaderLabel_(sheet, key) {
+  var want = String(key || '').trim();
+  if (!want) return -1;
+  var last = sheet.getLastColumn();
+  if (last < 1) return -1;
+  var headers = sheet.getRange(1, 1, 1, last).getValues()[0];
+  for (var c = 0; c < headers.length; c++) {
+    if (String(headers[c] || '').trim() === want) return c + 1;
+  }
+  return -1;
+}
+
+/** Sheet cell counts as Yes for event columns (case-insensitive). */
+function cellIsYes_(val) {
+  return String(val || '')
+    .trim()
+    .toLowerCase() === 'yes';
+}
+
+/** Event column counts as registered: Yes, TRUE, checkbox true, common truthy strings. */
+function cellCountsAsRegisteredForEvent_(val) {
+  if (val === true) return true;
+  var s = String(val || '').trim().toLowerCase();
+  if (!s) return false;
+  if (s === 'yes' || s === 'true' || s === '1' || s === 'y') return true;
+  return false;
+}
+
+/** Registration desk cell for today has a value (timestamp string or Date). */
+function deskCheckInCellIsSet_(val) {
+  if (val === null || val === undefined) return false;
+  if (Object.prototype.toString.call(val) === '[object Date]' && !isNaN(val.getTime())) return true;
+  return String(val).trim() !== '';
+}
+
+/** Display string for a check-in timestamp cell (Date or string). Empty if unset. */
+function checkInCellDisplayString_(val) {
+  if (!deskCheckInCellIsSet_(val)) return '';
+  if (Object.prototype.toString.call(val) === '[object Date]' && !isNaN(val.getTime())) {
+    return Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  }
+  return String(val).trim();
+}
+
+/** @param {Array} headerRow */
+function findWhatsappColumnKeyFromRow_(headerRow) {
+  for (var c = 0; c < headerRow.length; c++) {
+    var h = String(headerRow[c] || '').trim();
+    if (!h) continue;
+    if (/whatsapp/i.test(h)) return h;
+  }
+  return null;
+}
+
+/** @param {Array} headerRow */
+function findPhoneAlternateColumnKeyFromRow_(headerRow) {
+  for (var c = 0; c < headerRow.length; c++) {
+    var h = String(headerRow[c] || '').trim();
+    if (!h) continue;
+    if (/alternate|alt\.?\s*phone|phone\s*alt|second\s*phone|other\s*phone|mobile\s*2/i.test(h)) return h;
+  }
+  return null;
+}
+
+function bulandiHtmlEscape_(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** BR as shown in emails: no hyphens (e.g. BR-1511 → BR1511). */
+function bulandiBrForEmail_(raw) {
+  return String(raw || '')
+    .replace(/-/g, '')
+    .trim();
+}
+
+/** Violet call-to-action block: Event Registration tab (HTML). */
+function bulandiEventRegistrationTabBlockHtml_(safe) {
+  var u = String(BULANDI_EVENT_REGISTRATION_TAB_URL || '').trim();
+  if (!u) return '';
+  return (
+    '<div style="margin:0 0 20px;padding:14px 18px;background:#faf5ff;border:1px solid #ddd6fe;border-radius:8px;">' +
+      '<p style="margin:0 0 6px;font-size:12px;font-weight:bold;letter-spacing:0.05em;color:#5b21b6;text-transform:uppercase;font-family:Arial,sans-serif;">Event registration</p>' +
+      '<a href="' +
+      safe(u) +
+      '" style="font-size:15px;color:#6d28d9;font-weight:bold;text-decoration:none;">Open Event Registration tab →</a>' +
+    '</div>'
+  );
+}
+
+/** Optional second line: general Bulandi page if configured and different from the event-registration URL. */
+function bulandiOptionalGeneralPageLinkHtml_(safe, eventsUrl) {
+  var ev = String(eventsUrl || '').trim();
+  var tab = String(BULANDI_EVENT_REGISTRATION_TAB_URL || '').trim();
+  if (!ev || ev === tab) return '';
+  return (
+    '<p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#4b5563;">' +
+      '<a href="' +
+      safe(ev) +
+      '" style="color:#b91c1c;font-weight:bold;">Open Bulandi 2026 — full page</a>' +
+    '</p>'
+  );
+}
+
 function parseBrNumeric_(raw) {
   var s = String(raw || '')
     .replace(/\s/g, '')
@@ -300,6 +509,14 @@ function normalizeDobToIso_(raw) {
   var s = String(raw || '').trim();
   if (!s) return '';
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if (/^\d{8}$/.test(s)) {
+    var y8 = parseInt(s.slice(0, 4), 10);
+    var mo8 = parseInt(s.slice(4, 6), 10);
+    var d8 = parseInt(s.slice(6, 8), 10);
+    if (mo8 >= 1 && mo8 <= 12 && d8 >= 1 && d8 <= 31) {
+      return y8 + '-' + pad2_(mo8) + '-' + pad2_(d8);
+    }
+  }
   var m = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(s);
   if (m) {
     var a = parseInt(m[1], 10);
@@ -322,6 +539,593 @@ function normalizeDobFromSheetCell_(val) {
     return val.getFullYear() + '-' + pad2_(val.getMonth() + 1) + '-' + pad2_(val.getDate());
   }
   return normalizeDobToIso_(String(val));
+}
+
+/**
+ * Locate registration row by BR + DOB. Returns { error } or sheet context.
+ * @returns {{ error: string } | { sheet: *, headerRow: Array, values: Array, matchRow1Based: number, dataRow: Array, brColIdx: number, dobColIdx: number }}
+ */
+function bulandiMatchRowContext_(wantBr, wantDobIso) {
+  if (wantBr === null || wantBr === undefined) {
+    return { error: 'Invalid BR number.' };
+  }
+  var wantDob = String(wantDobIso || '').trim();
+  if (!wantDob || !/^\d{4}-\d{2}-\d{2}$/.test(wantDob)) {
+    return { error: 'Invalid date of birth.' };
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return { error: 'Sheet not found: ' + SHEET_NAME };
+  }
+
+  var range = sheet.getDataRange();
+  var values = range.getValues();
+  if (!values || values.length < 2) {
+    return { error: 'No registration rows in sheet.' };
+  }
+
+  var headerRow = values[0];
+  var brKey = findBrColumnKeyFromRow_(headerRow);
+  var dobKey = findDobColumnKeyFromRow_(headerRow);
+  if (!brKey || !dobKey) {
+    return { error: 'Sheet is missing BR or DOB column headers.' };
+  }
+
+  var brColIdx = -1;
+  var dobColIdx = -1;
+  for (var c = 0; c < headerRow.length; c++) {
+    var h = String(headerRow[c] || '').trim();
+    if (h === brKey && brColIdx < 0) brColIdx = c;
+    if (h === dobKey && dobColIdx < 0) dobColIdx = c;
+  }
+  if (brColIdx < 0 || dobColIdx < 0) {
+    return { error: 'Could not locate BR or DOB columns.' };
+  }
+
+  var matchRow1Based = -1;
+  for (var r = 1; r < values.length; r++) {
+    var row = values[r];
+    var sheetBr = parseBrNumeric_(String(row[brColIdx] || ''));
+    if (sheetBr !== wantBr) continue;
+    var sheetDob = normalizeDobFromSheetCell_(row[dobColIdx]);
+    if (sheetDob === wantDob) {
+      matchRow1Based = r + 1;
+      break;
+    }
+    return { error: 'Mismatch registration details' };
+  }
+  if (matchRow1Based < 0) {
+    return { error: 'Mismatch registration details' };
+  }
+
+  var dataRow = values[matchRow1Based - 1];
+  return {
+    sheet: sheet,
+    headerRow: headerRow,
+    values: values,
+    matchRow1Based: matchRow1Based,
+    dataRow: dataRow,
+    brColIdx: brColIdx,
+    dobColIdx: dobColIdx,
+  };
+}
+
+/**
+ * Header for today’s registration desk check-in column: ddMMyyyyregistered — no hyphens (script timezone).
+ * Example: 28032026registered
+ */
+function registrationDeskColumnHeaderForToday_() {
+  var tz = Session.getScriptTimeZone();
+  return Utilities.formatDate(new Date(), tz, 'ddMMyyyy') + 'registered';
+}
+
+/** Legacy desk header with hyphens in the date — still matched for existing sheets. */
+function registrationDeskColumnLegacyHyphenatedForToday_() {
+  var tz = Session.getScriptTimeZone();
+  return Utilities.formatDate(new Date(), tz, 'dd-MM-yyyy') + '-registered';
+}
+
+/** 1-based column for today’s desk check-in: new format first, then legacy hyphenated. */
+function findRegistrationDeskColumn1BasedForToday_(sheet) {
+  var c = findColumn1BasedForHeaderLabel_(sheet, registrationDeskColumnHeaderForToday_());
+  if (c >= 0) return c;
+  return findColumn1BasedForHeaderLabel_(sheet, registrationDeskColumnLegacyHyphenatedForToday_());
+}
+
+/**
+ * Header for today’s backstage check-in column: dd-mm-yyyy-back-stage (script timezone).
+ * Example: 28-03-2026-back-stage
+ */
+function backstageColumnHeaderForToday_() {
+  var tz = Session.getScriptTimeZone();
+  return Utilities.formatDate(new Date(), tz, 'dd-MM-yyyy') + '-back-stage';
+}
+
+/**
+ * Header for today’s on-stage daily check-in column: dd-mm-yyyy-on-stage (script timezone).
+ * Example: 28-03-2026-on-stage
+ */
+function onStageColumnHeaderForToday_() {
+  var tz = Session.getScriptTimeZone();
+  return Utilities.formatDate(new Date(), tz, 'dd-MM-yyyy') + '-on-stage';
+}
+
+/**
+ * POST adminBackstageRowCheckIn: br, dob, eventName. Writes timestamp in today’s dd-mm-yyyy-back-stage column (appends if missing).
+ */
+function handleAdminBackstageRowCheckIn_(body) {
+  var brRaw = String(body.br || body.brNumber || '').trim();
+  var dobRaw = String(body.dob || '').trim();
+  var eventName = String(body.eventName || '').trim();
+  if (!brRaw || !dobRaw) {
+    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+  }
+  if (!eventName) {
+    return jsonOut({ ok: false, error: 'eventName is required.' });
+  }
+
+  var wantBr = parseBrNumeric_(brRaw);
+  var wantDob = normalizeDobToIso_(dobRaw);
+  var ctx = bulandiMatchRowContext_(wantBr, wantDob);
+  if (ctx.error) return jsonOut({ ok: false, error: ctx.error });
+
+  var regColKey = findSheetColumnKeyForEventName_(ctx.headerRow, eventName);
+  if (!regColKey) {
+    return jsonOut({ ok: false, error: 'No registration column for event: ' + eventName });
+  }
+  var regColIdx = findFirstColumnIndexForKey_(ctx.headerRow, regColKey);
+  if (regColIdx < 0) {
+    return jsonOut({ ok: false, error: 'Could not resolve column for: ' + eventName });
+  }
+  var regVal = regColIdx < ctx.dataRow.length ? ctx.dataRow[regColIdx] : '';
+  if (!cellCountsAsRegisteredForEvent_(regVal)) {
+    return jsonOut({ ok: false, error: 'Not registered for this event: ' + eventName });
+  }
+
+  var sheet = ctx.sheet;
+  var headerLabel = backstageColumnHeaderForToday_();
+  var col1Based = findColumn1BasedForHeaderLabel_(sheet, headerLabel);
+  if (col1Based < 0) {
+    col1Based = sheet.getLastColumn() + 1;
+    if (col1Based < 1) col1Based = 1;
+    sheet.getRange(1, col1Based).setValue(headerLabel);
+  }
+
+  var ts = adminCheckInTimestamp_();
+  sheet.getRange(ctx.matchRow1Based, col1Based).setValue(ts);
+  var colHeaderShown = String(sheet.getRange(1, col1Based).getValue() || headerLabel).trim();
+  return jsonOut({ ok: true, checkedInAt: ts, column: colHeaderShown, eventName: eventName });
+}
+
+/**
+ * POST adminOnStageRowCheckIn: br, dob, eventName. Requires today’s dd-mm-yyyy-back-stage set; writes dd-mm-yyyy-on-stage (appends if missing).
+ */
+function handleAdminOnStageRowCheckIn_(body) {
+  var brRaw = String(body.br || body.brNumber || '').trim();
+  var dobRaw = String(body.dob || '').trim();
+  var eventName = String(body.eventName || '').trim();
+  if (!brRaw || !dobRaw) {
+    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+  }
+  if (!eventName) {
+    return jsonOut({ ok: false, error: 'eventName is required.' });
+  }
+
+  var wantBr = parseBrNumeric_(brRaw);
+  var wantDob = normalizeDobToIso_(dobRaw);
+  var ctx = bulandiMatchRowContext_(wantBr, wantDob);
+  if (ctx.error) return jsonOut({ ok: false, error: ctx.error });
+
+  var regColKey = findSheetColumnKeyForEventName_(ctx.headerRow, eventName);
+  if (!regColKey) {
+    return jsonOut({ ok: false, error: 'No registration column for event: ' + eventName });
+  }
+  var regColIdx = findFirstColumnIndexForKey_(ctx.headerRow, regColKey);
+  if (regColIdx < 0) {
+    return jsonOut({ ok: false, error: 'Could not resolve column for: ' + eventName });
+  }
+  var regVal = regColIdx < ctx.dataRow.length ? ctx.dataRow[regColIdx] : '';
+  if (!cellCountsAsRegisteredForEvent_(regVal)) {
+    return jsonOut({ ok: false, error: 'Not registered for this event: ' + eventName });
+  }
+
+  var sheet = ctx.sheet;
+  var bkHeader = backstageColumnHeaderForToday_();
+  var bkCol1 = findColumn1BasedForHeaderLabel_(sheet, bkHeader);
+  if (bkCol1 < 0) {
+    return jsonOut({
+      ok: false,
+      error:
+        'No back stage column for today ("' +
+        bkHeader +
+        '"). Add it by completing back stage check-in for this participant first.',
+    });
+  }
+  var bkVal = sheet.getRange(ctx.matchRow1Based, bkCol1).getValue();
+  if (!deskCheckInCellIsSet_(bkVal)) {
+    return jsonOut({
+      ok: false,
+      error: 'Back stage check-in is required for today before on stage check-in.',
+    });
+  }
+
+  var headerLabel = onStageColumnHeaderForToday_();
+  var col1Based = findColumn1BasedForHeaderLabel_(sheet, headerLabel);
+  if (col1Based < 0) {
+    col1Based = sheet.getLastColumn() + 1;
+    if (col1Based < 1) col1Based = 1;
+    sheet.getRange(1, col1Based).setValue(headerLabel);
+  }
+
+  var ts = adminCheckInTimestamp_();
+  sheet.getRange(ctx.matchRow1Based, col1Based).setValue(ts);
+  var colHeaderShown = String(sheet.getRange(1, col1Based).getValue() || headerLabel).trim();
+  return jsonOut({ ok: true, checkedInAt: ts, column: colHeaderShown, eventName: eventName });
+}
+
+/**
+ * POST adminBackstageEligibleList: eventName (display name, same as sheet column / website).
+ * Returns participants with today’s registration-desk check-in set and main event column Yes/TRUE.
+ */
+function handleAdminBackstageEligibleList_(body) {
+  var eventName = String(body.eventName || '').trim();
+  if (!eventName) {
+    return jsonOut({ ok: false, error: 'eventName is required.' });
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return jsonOut({ ok: false, error: 'Sheet not found: ' + SHEET_NAME });
+  }
+
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) {
+    return jsonOut({
+      ok: true,
+      deskColumn: registrationDeskColumnHeaderForToday_(),
+      eventName: eventName,
+      participants: [],
+      count: 0,
+      note: 'No registration rows in sheet.',
+    });
+  }
+
+  var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+  if (!values || values.length < 2) {
+    return jsonOut({
+      ok: true,
+      deskColumn: registrationDeskColumnHeaderForToday_(),
+      eventName: eventName,
+      participants: [],
+      count: 0,
+      note: 'No registration rows in sheet.',
+    });
+  }
+
+  var headerRow = values[0];
+  var deskHeader = registrationDeskColumnHeaderForToday_();
+  var deskColIdx = findFirstColumnIndexForKey_(headerRow, deskHeader);
+  if (deskColIdx < 0) {
+    deskColIdx = findFirstColumnIndexForKey_(headerRow, registrationDeskColumnLegacyHyphenatedForToday_());
+  }
+  if (deskColIdx < 0) {
+    return jsonOut({
+      ok: true,
+      deskColumn: deskHeader,
+      eventName: eventName,
+      participants: [],
+      count: 0,
+      note:
+        'No desk column for today ("' +
+        deskHeader +
+        '" or legacy hyphenated form) yet — list will populate after the first registration desk check-in.',
+    });
+  }
+
+  var evColKey = findSheetColumnKeyForEventName_(headerRow, eventName);
+  if (!evColKey) {
+    return jsonOut({ ok: false, error: 'Sheet has no column for event: ' + eventName });
+  }
+  var evColIdx = findFirstColumnIndexForKey_(headerRow, evColKey);
+  if (evColIdx < 0) {
+    return jsonOut({ ok: false, error: 'Could not resolve column for event: ' + eventName });
+  }
+
+  var brKey = findBrColumnKeyFromRow_(headerRow);
+  if (!brKey) {
+    return jsonOut({ ok: false, error: 'Sheet is missing BR column headers.' });
+  }
+  var brColIdx = findFirstColumnIndexForKey_(headerRow, brKey);
+  if (brColIdx < 0) {
+    return jsonOut({ ok: false, error: 'Could not locate BR column.' });
+  }
+
+  var dobKey = findDobColumnKeyFromRow_(headerRow);
+  var dobColIdx = dobKey ? findFirstColumnIndexForKey_(headerRow, dobKey) : -1;
+
+  var waKey = findWhatsappColumnKeyFromRow_(headerRow);
+  var altKey = findPhoneAlternateColumnKeyFromRow_(headerRow);
+  var waColIdx = waKey ? findFirstColumnIndexForKey_(headerRow, waKey) : -1;
+  var altColIdx = altKey ? findFirstColumnIndexForKey_(headerRow, altKey) : -1;
+
+  var backstageHeader = backstageColumnHeaderForToday_();
+  var backstageColIdx = findFirstColumnIndexForKey_(headerRow, backstageHeader);
+
+  var participants = [];
+  for (var r = 1; r < values.length; r++) {
+    var row = values[r];
+    var deskVal = deskColIdx < row.length ? row[deskColIdx] : '';
+    if (!deskCheckInCellIsSet_(deskVal)) continue;
+    var evVal = evColIdx < row.length ? row[evColIdx] : '';
+    if (!cellCountsAsRegisteredForEvent_(evVal)) continue;
+    var brDisp = String(row[brColIdx] != null ? row[brColIdx] : '').trim();
+    var wa = waColIdx >= 0 && waColIdx < row.length ? String(row[waColIdx] != null ? row[waColIdx] : '').trim() : '';
+    var alt = altColIdx >= 0 && altColIdx < row.length ? String(row[altColIdx] != null ? row[altColIdx] : '').trim() : '';
+    var dobIso =
+      dobColIdx >= 0 && dobColIdx < row.length ? normalizeDobFromSheetCell_(row[dobColIdx]) : '';
+    var backstageCell = backstageColIdx >= 0 && backstageColIdx < row.length ? row[backstageColIdx] : '';
+    var backstageCheckedInAt = checkInCellDisplayString_(backstageCell);
+    participants.push({
+      br: brDisp,
+      whatsappNo: wa,
+      phoneAlternate: alt,
+      dob: dobIso,
+      backstageCheckedInAt: backstageCheckedInAt,
+    });
+  }
+
+  return jsonOut({
+    ok: true,
+    deskColumn: deskHeader,
+    backstageColumn: backstageHeader,
+    eventName: eventName,
+    participants: participants,
+    count: participants.length,
+  });
+}
+
+/**
+ * POST adminOnStageEligibleList: rows with today’s dd-mm-yyyy-back-stage set + main event Yes/TRUE; onStageCheckedInAt from dd-mm-yyyy-on-stage.
+ */
+function handleAdminOnStageEligibleList_(body) {
+  var eventName = String(body.eventName || '').trim();
+  if (!eventName) {
+    return jsonOut({ ok: false, error: 'eventName is required.' });
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return jsonOut({ ok: false, error: 'Sheet not found: ' + SHEET_NAME });
+  }
+
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) {
+    return jsonOut({
+      ok: true,
+      backstageColumn: backstageColumnHeaderForToday_(),
+      onStageColumn: onStageColumnHeaderForToday_(),
+      eventName: eventName,
+      participants: [],
+      count: 0,
+      note: 'No registration rows in sheet.',
+    });
+  }
+
+  var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+  if (!values || values.length < 2) {
+    return jsonOut({
+      ok: true,
+      backstageColumn: backstageColumnHeaderForToday_(),
+      onStageColumn: onStageColumnHeaderForToday_(),
+      eventName: eventName,
+      participants: [],
+      count: 0,
+      note: 'No registration rows in sheet.',
+    });
+  }
+
+  var headerRow = values[0];
+  var backstageHeader = backstageColumnHeaderForToday_();
+  var backstageColIdx = findFirstColumnIndexForKey_(headerRow, backstageHeader);
+  if (backstageColIdx < 0) {
+    return jsonOut({
+      ok: true,
+      backstageColumn: backstageHeader,
+      onStageColumn: onStageColumnHeaderForToday_(),
+      eventName: eventName,
+      participants: [],
+      count: 0,
+      note:
+        'No back stage column for today ("' +
+        backstageHeader +
+        '") yet — list appears after participants complete back stage check-in for today.',
+    });
+  }
+
+  var evColKey = findSheetColumnKeyForEventName_(headerRow, eventName);
+  if (!evColKey) {
+    return jsonOut({ ok: false, error: 'Sheet has no column for event: ' + eventName });
+  }
+  var evColIdx = findFirstColumnIndexForKey_(headerRow, evColKey);
+  if (evColIdx < 0) {
+    return jsonOut({ ok: false, error: 'Could not resolve column for event: ' + eventName });
+  }
+
+  var brKey = findBrColumnKeyFromRow_(headerRow);
+  if (!brKey) {
+    return jsonOut({ ok: false, error: 'Sheet is missing BR column headers.' });
+  }
+  var brColIdx = findFirstColumnIndexForKey_(headerRow, brKey);
+  if (brColIdx < 0) {
+    return jsonOut({ ok: false, error: 'Could not locate BR column.' });
+  }
+
+  var dobKey = findDobColumnKeyFromRow_(headerRow);
+  var dobColIdx = dobKey ? findFirstColumnIndexForKey_(headerRow, dobKey) : -1;
+
+  var waKey = findWhatsappColumnKeyFromRow_(headerRow);
+  var altKey = findPhoneAlternateColumnKeyFromRow_(headerRow);
+  var waColIdx = waKey ? findFirstColumnIndexForKey_(headerRow, waKey) : -1;
+  var altColIdx = altKey ? findFirstColumnIndexForKey_(headerRow, altKey) : -1;
+
+  var onStageHeader = onStageColumnHeaderForToday_();
+  var onStageColIdx = findFirstColumnIndexForKey_(headerRow, onStageHeader);
+
+  var participants = [];
+  for (var r = 1; r < values.length; r++) {
+    var row = values[r];
+    var bkVal = backstageColIdx < row.length ? row[backstageColIdx] : '';
+    if (!deskCheckInCellIsSet_(bkVal)) continue;
+    var evVal = evColIdx < row.length ? row[evColIdx] : '';
+    if (!cellCountsAsRegisteredForEvent_(evVal)) continue;
+    var brDisp = String(row[brColIdx] != null ? row[brColIdx] : '').trim();
+    var wa = waColIdx >= 0 && waColIdx < row.length ? String(row[waColIdx] != null ? row[waColIdx] : '').trim() : '';
+    var alt = altColIdx >= 0 && altColIdx < row.length ? String(row[altColIdx] != null ? row[altColIdx] : '').trim() : '';
+    var dobIso =
+      dobColIdx >= 0 && dobColIdx < row.length ? normalizeDobFromSheetCell_(row[dobColIdx]) : '';
+    var onStageCell = onStageColIdx >= 0 && onStageColIdx < row.length ? row[onStageColIdx] : '';
+    var onStageCheckedInAt = checkInCellDisplayString_(onStageCell);
+    participants.push({
+      br: brDisp,
+      whatsappNo: wa,
+      phoneAlternate: alt,
+      dob: dobIso,
+      onStageCheckedInAt: onStageCheckedInAt,
+    });
+  }
+
+  return jsonOut({
+    ok: true,
+    backstageColumn: backstageHeader,
+    onStageColumn: onStageHeader,
+    eventName: eventName,
+    participants: participants,
+    count: participants.length,
+  });
+}
+
+/**
+ * Check-in column for backstage or on-stage, per event. Header must include the event name and
+ * “Backstage” / “On stage” (e.g. “Backstage — Solo Dance”, “On stage — Solo Dance”).
+ * @param {'backstage' | 'onstage'} kind
+ */
+function findAdminEventCheckInColumnKey_(headerRow, kind, eventDisplayName) {
+  var evNorm = normalizeHeaderForEventMatch_(eventDisplayName);
+  for (var c = 0; c < headerRow.length; c++) {
+    var h = String(headerRow[c] || '').trim();
+    var hn = normalizeHeaderForEventMatch_(h);
+    if (hn.indexOf(evNorm) < 0) continue;
+    var hasBk = /\bbackstage\b|\bback\s+stage\b/.test(hn);
+    var hasOn = /\bon\s*stage\b|\bonstage\b/.test(hn);
+    if (kind === 'backstage' && hasBk) return h;
+    if (kind === 'onstage' && hasOn) return h;
+  }
+  return null;
+}
+
+function adminCheckInTimestamp_() {
+  return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+}
+
+/**
+ * POST action adminRegistrationDeskCheckIn: br, dob (yyyy-mm-dd or yyyymmdd; hyphens optional, stripped).
+ * Writes timestamp in column ddMMyyyyregistered for today (script timezone). Appends that column if neither format exists.
+ */
+function handleAdminRegistrationDeskCheckIn_(body) {
+  var brRaw = String(body.br || body.brNumber || '')
+    .trim()
+    .replace(/-/g, '');
+  var dobRaw = String(body.dob || '')
+    .trim()
+    .replace(/-/g, '');
+  if (!brRaw || !dobRaw) {
+    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+  }
+  var wantBr = parseBrNumeric_(brRaw);
+  var wantDob = normalizeDobToIso_(dobRaw);
+  var ctx = bulandiMatchRowContext_(wantBr, wantDob);
+  if (ctx.error) return jsonOut({ ok: false, error: ctx.error });
+
+  var sheet = ctx.sheet;
+  var headerLabel = registrationDeskColumnHeaderForToday_();
+  var col1Based = findRegistrationDeskColumn1BasedForToday_(sheet);
+  if (col1Based < 0) {
+    col1Based = sheet.getLastColumn() + 1;
+    if (col1Based < 1) col1Based = 1;
+    sheet.getRange(1, col1Based).setValue(headerLabel);
+  }
+
+  var ts = adminCheckInTimestamp_();
+  sheet.getRange(ctx.matchRow1Based, col1Based).setValue(ts);
+  var colHeaderShown = String(sheet.getRange(1, col1Based).getValue() || headerLabel).trim();
+  return jsonOut({ ok: true, checkedInAt: ts, column: colHeaderShown });
+}
+
+/**
+ * POST action adminBackstageCheckIn | adminOnStageCheckIn: br, dob, eventNames[] (display names).
+ * Participant must be “Yes” on the main event column. Writes timestamp to Backstage / On stage column for each event.
+ */
+function handleAdminEventCheckIn_(body, kind) {
+  var brRaw = String(body.br || body.brNumber || '').trim();
+  var dobRaw = String(body.dob || '').trim();
+  var eventNames = body.eventNames;
+
+  if (!brRaw || !dobRaw) {
+    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+  }
+  if (!Array.isArray(eventNames) || eventNames.length === 0) {
+    return jsonOut({ ok: false, error: 'Select at least one event to check in.' });
+  }
+
+  var wantBr = parseBrNumeric_(brRaw);
+  var wantDob = normalizeDobToIso_(dobRaw);
+  var ctx = bulandiMatchRowContext_(wantBr, wantDob);
+  if (ctx.error) return jsonOut({ ok: false, error: ctx.error });
+
+  var dataRow = ctx.dataRow;
+  var ts = adminCheckInTimestamp_();
+  var updated = [];
+
+  for (var i = 0; i < eventNames.length; i++) {
+    var ename = String(eventNames[i] || '').trim();
+    if (!ename) continue;
+
+    var regColKey = findSheetColumnKeyForEventName_(ctx.headerRow, ename);
+    if (!regColKey) {
+      return jsonOut({ ok: false, error: 'No registration column for event: ' + ename });
+    }
+    var regColIdx = findFirstColumnIndexForKey_(ctx.headerRow, regColKey);
+    if (regColIdx < 0) {
+      return jsonOut({ ok: false, error: 'Could not resolve column for: ' + ename });
+    }
+    var regVal = regColIdx < dataRow.length ? dataRow[regColIdx] : '';
+    if (!cellCountsAsRegisteredForEvent_(regVal)) {
+      return jsonOut({ ok: false, error: 'Not registered for this event: ' + ename });
+    }
+
+    var checkColKey = findAdminEventCheckInColumnKey_(ctx.headerRow, kind, ename);
+    if (!checkColKey) {
+      var hint = kind === 'backstage' ? 'Backstage — ' + ename : 'On stage — ' + ename;
+      return jsonOut({
+        ok: false,
+        error: 'No check-in column for this event. Add a column like “' + hint + '”.',
+      });
+    }
+    var checkColIdx = findFirstColumnIndexForKey_(ctx.headerRow, checkColKey);
+    if (checkColIdx < 0) {
+      return jsonOut({ ok: false, error: 'Could not resolve check-in column for: ' + ename });
+    }
+    ctx.sheet.getRange(ctx.matchRow1Based, checkColIdx + 1).setValue(ts);
+    updated.push(ename);
+  }
+
+  return jsonOut({ ok: true, updated: updated, checkedInAt: ts });
 }
 
 /**
@@ -398,11 +1202,22 @@ function handleEventRegistrationPost_(body) {
     return jsonOut({ ok: false, error: 'Mismatch registration details' });
   }
 
+  var dataRow = values[matchRow1Based - 1];
+  var nameKey = findNameColumnKeyFromRow_(headerRow);
+  var mailKey = findMailColumnKeyFromRow_(headerRow);
+  var nameColIdx = findFirstColumnIndexForKey_(headerRow, nameKey);
+  var mailColIdx = findFirstColumnIndexForKey_(headerRow, mailKey);
+  var registrantName = nameColIdx >= 0 && nameColIdx < dataRow.length ? dataRow[nameColIdx] : '';
+  var recipientMail = mailColIdx >= 0 && mailColIdx < dataRow.length ? dataRow[mailColIdx] : '';
+  var brDisplay = String(dataRow[brColIdx] || brRaw).trim();
+
   var selectedSet = {};
   for (var si = 0; si < selected.length; si++) {
     selectedSet[normalizeHeaderForEventMatch_(String(selected[si] || ''))] = true;
   }
 
+  var registeredNow = [];
+  var removedNow = [];
   var updated = 0;
   for (var ei = 0; ei < eligible.length; ei++) {
     var ename = String(eligible[ei] || '').trim();
@@ -421,12 +1236,28 @@ function handleEventRegistrationPost_(body) {
     if (colIdx < 0) {
       return jsonOut({ ok: false, error: 'Could not resolve column for: ' + ename });
     }
+    var oldVal = colIdx < dataRow.length ? dataRow[colIdx] : '';
+    var oldYes = cellIsYes_(oldVal);
     var writeYes = !!selectedSet[normalizeHeaderForEventMatch_(ename)];
+    if (writeYes && !oldYes) registeredNow.push(ename);
+    if (!writeYes && oldYes) removedNow.push(ename);
     sheet.getRange(matchRow1Based, colIdx + 1).setValue(writeYes ? 'Yes' : 'No');
     updated++;
   }
 
-  return jsonOut({ ok: true, updated: updated });
+  var emailSent = false;
+  if (BULANDI_SEND_EMAIL && (registeredNow.length > 0 || removedNow.length > 0)) {
+    emailSent = sendBulandiEventRegistrationUpdateEmail_(
+      recipientMail,
+      registrantName,
+      brDisplay,
+      wantDob,
+      registeredNow,
+      removedNow
+    );
+  }
+
+  return jsonOut({ ok: true, updated: updated, emailSent: emailSent });
 }
 
 function sendBulandiRegistrationConfirmationEmail_(recipientEmail, registrantName, brNumber, dobYyyyMmDd) {
@@ -439,7 +1270,7 @@ function sendBulandiRegistrationConfirmationEmail_(recipientEmail, registrantNam
   }
 
   var displayName = String(registrantName || '').trim() || 'Participant';
-  var br = String(brNumber || '').trim();
+  var br = bulandiBrForEmail_(brNumber);
   var dob = String(dobYyyyMmDd || '').trim();
   var eventsUrl = String(BULANDI_EVENTS_PAGE_URL || '').trim();
 
@@ -457,7 +1288,144 @@ function sendBulandiRegistrationConfirmationEmail_(recipientEmail, registrantNam
   }
 }
 
+/**
+ * @param {string[]} registeredNames
+ * @param {string[]} removedNames
+ * @returns {boolean} true if Gmail send was attempted and did not throw
+ */
+function sendBulandiEventRegistrationUpdateEmail_(recipientEmail, registrantName, brNumber, dobYyyyMmDd, registeredNames, removedNames) {
+  if (!BULANDI_SEND_EMAIL) return false;
+
+  var to = String(recipientEmail || '').trim();
+  if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+    Logger.log('Bulandi event-choice email skipped: invalid or missing email on sheet row');
+    return false;
+  }
+
+  var displayName = String(registrantName || '').trim() || 'Participant';
+  var br = bulandiBrForEmail_(brNumber);
+  var dob = String(dobYyyyMmDd || '').trim();
+  var eventsUrl = String(BULANDI_EVENTS_PAGE_URL || '').trim();
+
+  var subject = 'Event choices updated — ' + BULANDI_EVENT_TITLE + ' • BR ' + br;
+  var plain = buildBulandiEventUpdatePlain_(displayName, br, dob, registeredNames, removedNames, eventsUrl);
+  var html = buildBulandiEventUpdateHtml_(displayName, br, dob, registeredNames, removedNames, eventsUrl);
+
+  try {
+    GmailApp.sendEmail(to, subject, plain, {
+      htmlBody: html,
+      name: BULANDI_SENDER_NAME,
+    });
+    return true;
+  } catch (e) {
+    Logger.log('Bulandi event-choice email failed: ' + e);
+    return false;
+  }
+}
+
+function buildBulandiEventUpdatePlain_(name, brNumber, dob, registeredNames, removedNames, eventsUrl) {
+  var reg = registeredNames && registeredNames.length ? registeredNames.join(', ') : '(none)';
+  var rem = removedNames && removedNames.length ? removedNames.join(', ') : '(none)';
+  var tabUrl = String(BULANDI_EVENT_REGISTRATION_TAB_URL || '').trim();
+  var lines = [
+    'Dear ' + name + ',',
+    '',
+    'Your competition choices for ' + BULANDI_EVENT_TITLE + ' have been saved. Compared to your previous choices of events, the following changed:',
+    '',
+    'Your Bulandi registration number (BR number): ' + brNumber,
+    'Date of birth (as submitted): ' + dob,
+    '',
+    'Registered for: ' + reg,
+    'Removed from registration: ' + rem,
+    '',
+    'If you need to change your selections again, use Event Registration on the Bulandi page with the same BR number and date of birth.',
+  ];
+  if (tabUrl) {
+    lines.push('');
+    lines.push('Event registration: ' + tabUrl);
+  }
+  var ev = String(eventsUrl || '').trim();
+  if (ev && ev !== tabUrl) {
+    lines.push('');
+    lines.push('Bulandi page: ' + ev);
+  }
+  lines.push('');
+  lines.push('Warm regards,');
+  lines.push(BULANDI_SENDER_NAME);
+  return lines.join('\n');
+}
+
+function buildBulandiEventUpdateHtml_(name, brNumber, dob, registeredNames, removedNames, eventsUrl) {
+  var safe = bulandiHtmlEscape_;
+  var tabBlock = bulandiEventRegistrationTabBlockHtml_(safe);
+  var generalLink = bulandiOptionalGeneralPageLinkHtml_(safe, eventsUrl);
+  var linksFallback =
+    !tabBlock && !generalLink
+      ? '<p style="margin:0 0 20px;color:#4b5563;font-size:14px;">Visit the SMYM website Bulandi 2026 page to review or change your event choices.</p>'
+      : '';
+
+  var regListHtml = bulandiEventNamesListHtml_(registeredNames, safe);
+  var remListHtml = bulandiEventNamesListHtml_(removedNames, safe);
+
+  return (
+    '<div style="font-family:Georgia,serif;font-size:15px;line-height:1.6;color:#111827;max-width:600px;margin:0 auto;">' +
+    '<div style="background:#7c1a1a;padding:20px 28px 18px;border-radius:10px 10px 0 0;">' +
+      '<p style="margin:0;font-size:11px;font-weight:bold;letter-spacing:0.08em;color:#f5c4c4;text-transform:uppercase;font-family:Arial,sans-serif;">Shree Maheshwari Yuva Mandal, Chennai</p>' +
+      '<p style="margin:4px 0 0;font-size:20px;color:#ffffff;font-family:Georgia,serif;">' + safe(BULANDI_EVENT_TITLE) + '</p>' +
+    '</div>' +
+    '<div style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:28px 28px 24px;">' +
+      '<p style="margin:0 0 16px;font-size:15px;color:#111827;">Dear <strong>' + safe(name) + '</strong>,</p>' +
+      '<p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#111827;">Your <strong>competition choices</strong> have been saved. Compared to your <strong>previous choices of events</strong>, the following changed:</p>' +
+      '<div style="background:#fff5f5;border:1px solid #f5c4c4;border-radius:8px;padding:16px 20px;margin:0 0 20px;">' +
+        '<p style="margin:0 0 6px;font-size:11px;font-weight:bold;letter-spacing:0.06em;color:#993c1d;text-transform:uppercase;font-family:Arial,sans-serif;">Your Bulandi Registration Number</p>' +
+        '<p style="margin:0;font-size:26px;font-weight:bold;font-family:ui-monospace,Courier New,monospace;color:#7c1a1a;letter-spacing:0.06em;">' + safe(brNumber) + '</p>' +
+      '</div>' +
+      '<div style="border-left:3px solid #d85a30;padding:4px 0 4px 16px;margin:0 0 22px;">' +
+        '<p style="margin:0 0 8px;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">BR Number</span> <strong>' + safe(brNumber) + '</strong></p>' +
+        '<p style="margin:0;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">Date of birth</span> <strong>' + safe(dob) + '</strong></p>' +
+      '</div>' +
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin:0 0 16px;">' +
+        '<p style="margin:0 0 8px;font-size:12px;font-weight:bold;letter-spacing:0.06em;color:#15803d;text-transform:uppercase;font-family:Arial,sans-serif;">Registered for</p>' +
+        regListHtml +
+      '</div>' +
+      '<div style="background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:16px 20px;margin:0 0 24px;">' +
+        '<p style="margin:0 0 8px;font-size:12px;font-weight:bold;letter-spacing:0.06em;color:#b91c1c;text-transform:uppercase;font-family:Arial,sans-serif;">Removed from registration</p>' +
+        remListHtml +
+      '</div>' +
+      '<p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:#4b5563;">You can update your selections again anytime from <strong>Event Registration</strong> on the Bulandi page, using the same BR number and date of birth.</p>' +
+      tabBlock +
+      generalLink +
+      linksFallback +
+      '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin:24px 0 0;display:flex;align-items:center;gap:14px;">' +
+        '<img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="32" height="32" alt="WhatsApp" style="flex-shrink:0;" />' +
+        '<div>' +
+          '<p style="margin:0 0 4px;font-size:13px;font-weight:bold;color:#15803d;text-transform:uppercase;letter-spacing:0.05em;font-family:Arial,sans-serif;">Official Bulandi Group</p>' +
+          '<a href="https://chat.whatsapp.com/L14kRAoLXKP371AASqqowo?mode=gi_t" style="font-size:14px;color:#166534;font-weight:bold;text-decoration:none;">Join the WhatsApp group &rarr;</a>' +
+        '</div>' +
+      '</div>' +
+      '<div style="border-top:1px solid #e5e7eb;padding-top:20px;margin-top:24px;">' +
+        '<p style="margin:0;font-size:14px;line-height:1.7;color:#6b7280;">Warm regards,<br><span style="font-weight:bold;color:#111827;">' + safe(BULANDI_SENDER_NAME) + '</span></p>' +
+      '</div>' +
+    '</div>' +
+    '</div>'
+  );
+}
+
+/** @param {string[]} names @param {function(string):string} safe */
+function bulandiEventNamesListHtml_(names, safe) {
+  if (!names || names.length === 0) {
+    return '<p style="margin:0;font-size:14px;color:#6b7280;font-style:italic;">None.</p>';
+  }
+  var items = '';
+  for (var i = 0; i < names.length; i++) {
+    items +=
+      '<li style="margin:6px 0;font-size:14px;color:#111827;line-height:1.5;">' + safe(String(names[i] || '')) + '</li>';
+  }
+  return '<ul style="margin:0;padding-left:20px;">' + items + '</ul>';
+}
+
 function buildBulandiConfirmationPlain_(name, brNumber, dob, eventsUrl) {
+  var tabUrl = String(BULANDI_EVENT_REGISTRATION_TAB_URL || '').trim();
   var lines = [
     'Dear ' + name + ',',
     '',
@@ -469,11 +1437,16 @@ function buildBulandiConfirmationPlain_(name, brNumber, dob, eventsUrl) {
     '  • Your BR number: ' + brNumber,
     '  • Your date of birth (as submitted): ' + dob,
     '',
-    'Next step: go through the list of events on the Bulandi page and complete registration for each event you wish to take part in.',
+    'Next step: open Event Registration on the Bulandi page and choose the competitions you wish to take part in.',
   ];
-  if (eventsUrl) {
+  if (tabUrl) {
     lines.push('');
-    lines.push('Events and registration: ' + eventsUrl);
+    lines.push('Event registration: ' + tabUrl);
+  }
+  var ev = String(eventsUrl || '').trim();
+  if (ev && ev !== tabUrl) {
+    lines.push('');
+    lines.push('Bulandi page: ' + ev);
   }
   lines.push('');
   lines.push('Warm regards,');
@@ -482,18 +1455,13 @@ function buildBulandiConfirmationPlain_(name, brNumber, dob, eventsUrl) {
 }
 
 function buildBulandiConfirmationHtml_(name, brNumber, dob, eventsUrl) {
-  var safe = function (s) {
-    return String(s || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  };
-  var eventsBlock = eventsUrl
-    ? '<p style="margin:16px 0 0;"><a href="' +
-      safe(eventsUrl) +
-      '" style="color:#b91c1c;font-weight:bold;">Open Bulandi 2026 — event list &amp; registration</a></p>'
-    : '<p style="margin:16px 0 0;color:#4b5563;">Visit the SMYM website Bulandi 2026 page for the event list and registration links.</p>';
+  var safe = bulandiHtmlEscape_;
+  var tabBlock = bulandiEventRegistrationTabBlockHtml_(safe);
+  var generalLink = bulandiOptionalGeneralPageLinkHtml_(safe, eventsUrl);
+  var linksFallback =
+    !tabBlock && !generalLink
+      ? '<p style="margin:0 0 24px;color:#4b5563;font-size:14px;line-height:1.65;">Visit the SMYM website Bulandi 2026 page for the event list and registration.</p>'
+      : '';
 
   return (
     '<div style="font-family:Georgia,serif;font-size:15px;line-height:1.6;color:#111827;max-width:600px;margin:0 auto;">' +
@@ -516,15 +1484,17 @@ function buildBulandiConfirmationHtml_(name, brNumber, dob, eventsUrl) {
         '<p style="margin:0;font-size:26px;font-weight:bold;font-family:ui-monospace,Courier New,monospace;color:#7c1a1a;letter-spacing:0.06em;">' + safe(brNumber) + '</p>' +
       '</div>' +
 
-      '<p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:#4b5563;">Please keep this number safe. To register for competitions and activities, browse the event list in the SMYM Website and complete each event registration using:</p>' +
+      '<p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:#4b5563;">Please keep this number safe. To register for competitions, open <strong>Event Registration</strong> on the Bulandi page and sign in with:</p>' +
 
       // Credential list
-      '<div style="border-left:3px solid #d85a30;padding:4px 0 4px 16px;margin:0 0 24px;">' +
+      '<div style="border-left:3px solid #d85a30;padding:4px 0 4px 16px;margin:0 0 20px;">' +
         '<p style="margin:0 0 8px;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">BR Number</span> <strong>' + safe(brNumber) + '</strong></p>' +
         '<p style="margin:0;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">Date of birth</span> <strong>' + safe(dob) + '</strong></p>' +
       '</div>' +
 
-      eventsBlock +
+      tabBlock +
+      generalLink +
+      linksFallback +
 
       // WhatsApp group CTA
       '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin:0 0 24px;display:flex;align-items:center;gap:14px;">' +
@@ -572,8 +1542,9 @@ function nextBrNumber_(pool) {
     var values = sheet.getRange(2, 1, lastRow, 1).getValues();
     for (var i = 0; i < values.length; i++) {
       var cell = String(values[i][0] || '');
-      var n = parseBrNumeric_(cell);
-      if (n == null) continue;
+      var m = cell.match(/^BR(\d+)$/i);
+      if (!m) continue;
+      var n = parseInt(m[1], 10);
       if (pool === 'u15') {
         if (n >= BR_U15_MIN && n <= BR_U15_MAX && n > maxNum) maxNum = n;
       } else {
@@ -584,7 +1555,7 @@ function nextBrNumber_(pool) {
 
   var next = maxNum + 1;
   if (pool === 'u15') {
-    if (next > BR_U15_MAX) throw new Error('Under-15 BR range full (BR' + BR_U15_MIN + '–BR' + BR_U15_MAX + ')');
+    if (next > BR_U15_MAX) throw new Error('Under-15 BR range full (BR' + BR_U15_MIN + '-BR' + BR_U15_MAX + ')');
   } else {
     if (next > BR_O15_MAX) throw new Error('15+ BR range full');
   }

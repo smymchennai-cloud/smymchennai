@@ -14,11 +14,14 @@ import {
 } from './components';
 import MemberRegistrationPage from './components/pages/MemberRegistrationPage';
 import Bulandi2026Page from './components/pages/Bulandi2026Page';
+import Bulandi2026AdminPage from './components/pages/Bulandi2026AdminPage';
+import { BULANDI_2026_ADMIN_PATH } from './data/bulandi2026Data';
 
 const App = () => {
   const path = window.location.pathname;
   const isMemberRegistrationPage = path === '/member-registration';
   const isBulandi2026Page = path === '/bulandi-2026';
+  const isBulandi2026AdminPage = path === BULANDI_2026_ADMIN_PATH;
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
@@ -58,6 +61,10 @@ const App = () => {
 
   if (isBulandi2026Page) {
     return <Bulandi2026Page />;
+  }
+
+  if (isBulandi2026AdminPage) {
+    return <Bulandi2026AdminPage />;
   }
 
   return (

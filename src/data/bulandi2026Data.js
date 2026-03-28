@@ -54,6 +54,9 @@ export const bulandi2026Meta = {
 /** App route for the Bulandi 2026 page (must match `App.js`). */
 export const BULANDI_2026_PATH = '/bulandi-2026';
 
+/** On-site admin check-in portal (must match `App.js`). */
+export const BULANDI_2026_ADMIN_PATH = '/bulandi-2026-admin';
+
 /**
  * Deep links: same page, tab from the hash. Bulandi2026Page reads `location.hash` on load and on `hashchange`.
  * Use these `href` values in emails, WhatsApp, Events, etc.
