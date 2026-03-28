@@ -3,6 +3,23 @@
  * Set mainRegistrationUrl, scheduleUrl, workshopRegistrationUrl, registrationWebAppUrl, per-event URLs when live.
  */
 
+import bulandiWebApp from '../config/bulandiWebApp.json';
+
+/**
+ * One bound Apps Script deployment should handle both POST (registration) and GET (sheet → gviz for event verify).
+ * Single source of truth: `src/config/bulandiWebApp.json` (also read by src/setupProxy.js for npm start).
+ * @see scripts/bulandiRegistrationBoundWebApp.gs
+ */
+const BULANDI_REGISTRATION_WEB_APP_URL = bulandiWebApp.execUrl;
+
+/**
+ * In development, CRA (setupProxy.js) proxies this path to the real /exec URL so the browser stays same-origin.
+ * Production uses the full Google URL — the web app must be deployed with “Who has access: Anyone” (including anonymous)
+ * or the browser will block the request (CORS / “failed to fetch”).
+ */
+const BULANDI_WEB_APP_BROWSER_URL =
+  process.env.NODE_ENV === 'development' ? '/bulandi-sheet-exec' : BULANDI_REGISTRATION_WEB_APP_URL;
+
 export const bulandi2026Meta = {
   title: 'Bulandi 2026',
   date: '2026-07-26',
@@ -16,9 +33,22 @@ export const bulandi2026Meta = {
    * Google Apps Script web app URL for the Bulandi registration form (POST). Must end with `/exec`.
    * Paste the URL from Apps Script → Deploy → Web app.
    */
-  registrationWebAppUrl: 'https://script.google.com/macros/s/AKfycbzTQ3HKaFeBfZNbwCIZh0eDORkdku7k0iSqag3IWZWv5XsxQaZSJF5wvIQGdOEtoV0Q/exec',
+  registrationWebAppUrl: BULANDI_WEB_APP_BROWSER_URL,
   /** Optional — if set in Apps Script as SUBMIT_SECRET, use the same value here */
   registrationSubmitSecret: '',
+
+  /**
+   * Spreadsheet id — used only if `eventRegistrationSheetFetchUrl` is empty (direct gviz from the browser; often blocked by CORS).
+   * When using the bound web app GET, you can leave this set for documentation; the app reads data from the script, not this URL.
+   * @see https://docs.google.com/spreadsheets/d/1X6wXE1AIpR7edkmmtosGq3z4l0s-fPohOeO8qI45Ig4
+   */
+  eventRegistrationSpreadsheetId: '1X6wXE1AIpR7edkmmtosGq3z4l0s-fPohOeO8qI45Ig4',
+  /** Sheet tab id (only used for direct gviz when fetch URL is empty) */
+  eventRegistrationSheetGid: '0',
+  /**
+   * GET — must return gviz JSON (`google.visualization.Query.setResponse(...)`). Use the same `/exec` URL as `registrationWebAppUrl`.
+   */
+  eventRegistrationSheetFetchUrl: BULANDI_WEB_APP_BROWSER_URL,
 };
 
 /**
@@ -68,8 +98,8 @@ export const bulandiGoldSponsors = [
 export const bulandiSubEvents = [
   // —— Under 15 years ——
   {
-    id: 'car-racing-u15',
-    name: 'Car Racing',
+    id: 'car-race-u15',
+    name: 'Car Race',
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
@@ -90,8 +120,8 @@ export const bulandiSubEvents = [
     resultsUrl: '',
   },
   {
-    id: 'story-telling-sacred-u15',
-    name: 'Story Telling (Sacred Narratives)',
+    id: 'story-telling-sacred-narratives-u15',
+    name: 'Story Telling Sacred Narratives',
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
@@ -101,57 +131,57 @@ export const bulandiSubEvents = [
     resultsUrl: '',
   },
   {
-    id: 'sudoku-challenge-u15',
-    name: 'Sudoku Challenge',
+    id: 'gk-crossword-u15',
+    name: 'GK Crossword',
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
-      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nDifficulty tiers, time limits, and tie-breakers will be specified at the event. No external aids unless notified.',
+      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nGeneral-knowledge crossword format, time limit, materials, and tie-breakers will be specified at the event.',
     registrationUrl: '',
     resultsUrl: '',
   },
   {
-    id: 'tote-bag-designing-u15',
-    name: 'Tote Bag Designing',
+    id: 'fortune-draw-u15',
+    name: 'Fortune Draw',
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
-      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nMaterials, theme, duration, and submission/display rules will be shared before the competition.',
-    registrationUrl: '',
-    resultsUrl: '',
-  },
-  {
-    id: 'hindi-handwriting-u15',
-    name: 'Hindi Handwriting',
-    ageGroup: 'under15',
-    ageGroupLabel: 'Over 5 and under 15 years',
-    prizes: '₹3,000 / ₹2,000 / ₹1,000',
-    rules:
-      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nScript style, passage, duration, and paper rules will be notified by coordinators. Neatness, formation, and consistency will guide judging.',
+      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nDraw mechanics, eligibility for each round, and conduct rules will be announced by the coordinators.',
     registrationUrl: '',
     resultsUrl: '',
   },
   {
     id: 'masterchef-solo-u15',
-    name: 'Masterchef Solo',
+    name: 'Masterchef Solo (without fire)',
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
-      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nDish scope, ingredients, kitchen safety, time limit, and judging criteria (taste, presentation, hygiene) will be defined in the event brief. Parent / guardian supervision rules if any will be specified.',
+      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nNo open flame or fire cooking. Dish scope, ingredients, prep safety, time limit, and judging (taste, presentation, hygiene) will be defined in the event brief. Parent / guardian supervision rules if any will be specified.',
     registrationUrl: '',
     resultsUrl: '',
   },
   {
-    id: 'fashion-show-u15',
-    name: 'Fashion Show',
+    id: 'master-miss-bulandi-u15',
+    name: 'Master and Miss Bulandi',
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
     rules:
-      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nTheme, walk timing, music, team size, and dress code (modest, community-appropriate) will follow the coordinator circular.',
+      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nRounds, theme, dress code (modest, community-appropriate), and judging criteria will follow the coordinator circular.',
+    registrationUrl: '',
+    resultsUrl: '',
+  },
+  {
+    id: 'creative-tinkering-u15',
+    name: 'Creative Tinkering',
+    ageGroup: 'under15',
+    ageGroupLabel: 'Over 5 and under 15 years',
+    prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    rules:
+      'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nBrief, materials, build time, and display/judging rules will be shared before the competition.',
     registrationUrl: '',
     resultsUrl: '',
   },
@@ -201,24 +231,24 @@ export const bulandiSubEvents = [
     resultsUrl: '',
   },
   {
-    id: 'design-a-character-o15',
-    name: 'Design a Character',
+    id: 'tote-bag-designing-o15',
+    name: 'Tote Bag Designing',
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
-      'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nMedium (digital / on-paper), theme, submission format, and originality requirements will be announced by coordinators.',
+      'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nMaterials, theme, duration, and submission/display rules will be shared before the competition.',
     registrationUrl: '',
     resultsUrl: '',
   },
   {
-    id: 'fish-tank-o15',
-    name: 'Fish Tank',
+    id: 'case-study-o15',
+    name: 'Case Study',
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
     rules:
-      'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nPitch format, time per team, judging criteria, and use of props/slides will follow the coordinator circular (inspired by a pitch-style showcase).',
+      'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nCase brief, time per team, judging criteria, and use of props/slides will follow the coordinator circular.',
     registrationUrl: '',
     resultsUrl: '',
   },
@@ -235,12 +265,23 @@ export const bulandiSubEvents = [
   },
   {
     id: 'hindi-writing-o15',
-    name: 'Hindi Writing Competition',
+    name: 'Hindi Writing',
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nTopic or prompt, word/time limits, script (Devanagari), and submission format will be shared by coordinators. Original work only; plagiarism leads to disqualification.',
+    registrationUrl: '',
+    resultsUrl: '',
+  },
+  {
+    id: 'ai-wars-o15',
+    name: 'AI wars',
+    ageGroup: 'over15',
+    ageGroupLabel: '15 years and above',
+    prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    rules:
+      'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nChallenge format, allowed tools, time limits, and judging criteria will be published by the organising team.',
     registrationUrl: '',
     resultsUrl: '',
   },

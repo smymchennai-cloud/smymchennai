@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
-  Award,
-  ChevronDown,
+  BadgeCheck,
   ChevronRight,
-  ChevronUp,
   Handshake,
+  Loader2,
   Trophy,
   X,
 } from 'lucide-react';
@@ -19,6 +18,14 @@ import {
 } from '../../data/bulandi2026Data';
 import { BANK_DETAILS, GENDER_OPTIONS } from '../../constants/formOptions';
 import { sendBulandiWhapiConfirmation } from '../../utils/bulandiWhapiNotify';
+import {
+  fetchBulandiRegistrationTable,
+  findMatchingRegistrationRow,
+  isUnder15BrRange,
+  parseBrNumeric,
+  postBulandiEventRegistration,
+  preselectedEventIdsFromRegistrationRow,
+} from '../../utils/bulandiRegistrationSheet';
 
 const TEN_DIGIT_PHONE = /^\d{10}$/;
 
@@ -121,13 +128,23 @@ const parsePrizeTiers = (prizes) => {
   return { first: parts[0], second: parts[1], third: parts[2] };
 };
 
-const PrizeBadgesRow = ({ prizes }) => {
+const PrizeBadgesRow = ({ prizes, inline = false }) => {
   const tiers = parsePrizeTiers(prizes);
   if (!tiers) {
-    return <span className="text-xs font-medium text-violet-700 mt-1 block">{prizes}</span>;
+    return (
+      <span
+        className={`text-xs font-medium text-violet-700 tabular-nums ${inline ? 'inline' : 'mt-1 block'}`}
+      >
+        {prizes}
+      </span>
+    );
   }
   return (
-    <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 mt-2" role="group" aria-label="Prize money for 1st, 2nd, and 3rd place">
+    <div
+      className={`flex flex-wrap items-center gap-1 sm:gap-1.5 ${inline ? 'inline-flex' : 'mt-2'}`}
+      role="group"
+      aria-label="Prize money for 1st, 2nd, and 3rd place"
+    >
       <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-extrabold text-amber-950 shadow-sm ring-1 ring-amber-400/60 tabular-nums">
         <Trophy className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 text-amber-950/90" aria-hidden />
         <span className="sr-only">1st place: </span>
@@ -141,6 +158,31 @@ const PrizeBadgesRow = ({ prizes }) => {
         <span className="sr-only">3rd place: </span>
         {tiers.third}
       </span>
+    </div>
+  );
+};
+
+/** Horizontal 1st / 2nd / 3rd prizes for the event registration list (same badges as elsewhere). */
+const EventListPrizeColumn = ({ prizes }) => {
+  const tiers = parsePrizeTiers(prizes);
+  if (!tiers) {
+    return (
+      <div className="w-full min-w-0 shrink">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-violet-600 mb-1">Prizes</p>
+        <p className="text-xs font-semibold text-violet-900 tabular-nums leading-snug">{prizes}</p>
+      </div>
+    );
+  }
+  return (
+    <div
+      className="w-full min-w-0 shrink"
+      role="group"
+      aria-label="Prize money for 1st, 2nd, and 3rd place"
+    >
+      <p className="text-[10px] font-bold uppercase tracking-wide text-violet-600 mb-1.5 sm:mb-0 sm:sr-only">
+        Prizes
+      </p>
+      <PrizeBadgesRow prizes={prizes} inline />
     </div>
   );
 };
@@ -266,6 +308,67 @@ const BrConfirmationModal = ({ brNumber, onClose }) => {
         >
           OK
         </button>
+      </div>
+    </div>
+  );
+};
+
+const EventRegistrationSuccessModal = ({ onClose }) => {
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="event-reg-success-title"
+        aria-describedby="event-reg-success-desc"
+      >
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-4 border-b border-emerald-100 flex items-start justify-between gap-3">
+          <h2 id="event-reg-success-title" className="text-lg font-bold text-gray-900 pr-2">
+            Thank you
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-white/80 text-gray-600 shrink-0"
+            aria-label="Close"
+          >
+            <X size={22} />
+          </button>
+        </div>
+        <div className="p-6 sm:p-7 text-center">
+          <div
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 ring-4 ring-emerald-50"
+            aria-hidden
+          >
+            <BadgeCheck className="h-8 w-8 text-emerald-600" strokeWidth={2.25} />
+          </div>
+          <p id="event-reg-success-desc" className="text-sm text-gray-600 leading-relaxed">
+            Your competition choices have been saved successfully.
+          </p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 py-3 text-base font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+          >
+            Done
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -732,84 +835,193 @@ const SponsorPersonCard = ({ entry, size = 'grid' }) => {
 };
 
 const Bulandi2026Page = () => {
-  const [openId, setOpenId] = useState(null);
   const [rulesEvent, setRulesEvent] = useState(null);
   const [activeTab, setActiveTab] = useState('bulandi-registration');
   const [registrationDrawerOpen, setRegistrationDrawerOpen] = useState(false);
   const [brConfirmNumber, setBrConfirmNumber] = useState(null);
 
-  const toggleRow = (id) => {
-    setOpenId((prev) => (prev === id ? null : id));
+  const [eventRegBr, setEventRegBr] = useState('');
+  const [eventRegDob, setEventRegDob] = useState('');
+  const [eventRegVerifyState, setEventRegVerifyState] = useState('idle');
+  const [eventRegError, setEventRegError] = useState('');
+  const [eventRegAgeBucket, setEventRegAgeBucket] = useState(null);
+  const [eventRegSelectedIds, setEventRegSelectedIds] = useState(() => new Set());
+  const [eventRegFromSheetIds, setEventRegFromSheetIds] = useState(() => new Set());
+  const [eventRegSuccessModalOpen, setEventRegSuccessModalOpen] = useState(false);
+  const [eventRegSubmitError, setEventRegSubmitError] = useState('');
+  const [eventRegSubmitting, setEventRegSubmitting] = useState(false);
+  const eventRegVerifiedRef = useRef(false);
+
+  useEffect(() => {
+    if (!eventRegVerifiedRef.current) return;
+    eventRegVerifiedRef.current = false;
+    setEventRegVerifyState('idle');
+    setEventRegAgeBucket(null);
+    setEventRegSelectedIds(new Set());
+    setEventRegFromSheetIds(new Set());
+    setEventRegSuccessModalOpen(false);
+    setEventRegSubmitError('');
+    setEventRegSubmitting(false);
+  }, [eventRegBr, eventRegDob]);
+
+  const handleEventRegVerify = async () => {
+    setEventRegError('');
+    const fetchUrl = (bulandi2026Meta.eventRegistrationSheetFetchUrl || '').trim();
+    const sheetId = (bulandi2026Meta.eventRegistrationSpreadsheetId || '').trim();
+    if (!fetchUrl && !sheetId) {
+      setEventRegError(
+        'Event registration is not configured: set eventRegistrationSheetFetchUrl (same as registration web app) in bulandi2026Data.js.'
+      );
+      setEventRegVerifyState('error');
+      return;
+    }
+    if (!parseBrNumeric(eventRegBr)) {
+      setEventRegError('Enter a valid BR number (e.g. BR-1511 or 1511).');
+      setEventRegVerifyState('error');
+      return;
+    }
+    if (!eventRegDob) {
+      setEventRegError('Enter your date of birth.');
+      setEventRegVerifyState('error');
+      return;
+    }
+    setEventRegVerifyState('loading');
+    try {
+      const { headers, rows } = await fetchBulandiRegistrationTable(
+        sheetId,
+        bulandi2026Meta.eventRegistrationSheetGid,
+        (bulandi2026Meta.eventRegistrationSheetFetchUrl || '').trim(),
+        { skipCache: true }
+      );
+      const match = findMatchingRegistrationRow(rows, headers, eventRegBr, eventRegDob);
+      const bucket = isUnder15BrRange(match.brNumeric) ? 'under15' : 'over15';
+      const eligible = bucket === 'under15' ? eventsUnder15 : eventsOver15;
+      const preIds = preselectedEventIdsFromRegistrationRow(match.row, headers, eligible);
+      setEventRegAgeBucket(bucket);
+      setEventRegFromSheetIds(new Set(preIds));
+      setEventRegSelectedIds(new Set(preIds));
+      setEventRegSuccessModalOpen(false);
+      setEventRegSubmitError('');
+      eventRegVerifiedRef.current = true;
+      setEventRegVerifyState('ok');
+    } catch (e) {
+      let msg = e?.message || 'Could not verify.';
+      if (e?.name === 'TypeError' || /failed to fetch|network|load failed/i.test(String(msg))) {
+        msg =
+          'Could not reach the Bulandi web app (often CORS). For production: Apps Script → Deploy → Web app → set “Who has access” to Anyone (including anonymous), then New version → Deploy. Open your /exec URL in a private window — it must not ask for Google sign-in. Local dev: use npm start (uses a dev-server proxy).';
+      }
+      setEventRegError(msg);
+      setEventRegAgeBucket(null);
+      setEventRegSelectedIds(new Set());
+      setEventRegFromSheetIds(new Set());
+      setEventRegSuccessModalOpen(false);
+      setEventRegSubmitError('');
+      setEventRegVerifyState('error');
+    }
   };
 
-  const renderEventList = (events) => (
+  const handleEventChoiceSubmit = async () => {
+    setEventRegSubmitError('');
+    if (eventRegSelectedIds.size === 0) {
+      setEventRegSubmitError('Please select at least one competition.');
+      return;
+    }
+    const webAppUrl = (bulandi2026Meta.registrationWebAppUrl || '').trim();
+    if (!webAppUrl) {
+      setEventRegSubmitError(
+        'Registration web app URL is not configured. Set registrationWebAppUrl in bulandi2026Data.js.'
+      );
+      return;
+    }
+    if (!eventRegAgeBucket) return;
+
+    const eligible = eventRegAgeBucket === 'under15' ? eventsUnder15 : eventsOver15;
+    const eligibleEventNames = eligible.map((e) => e.name);
+    const selectedEventNames = eligible
+      .filter((e) => eventRegSelectedIds.has(e.id))
+      .map((e) => e.name);
+
+    const payload = {
+      action: 'eventRegistration',
+      br: eventRegBr.trim(),
+      dob: eventRegDob,
+      eligibleEventNames,
+      selectedEventNames,
+    };
+    const regSecret = (bulandi2026Meta.registrationSubmitSecret || '').trim();
+    if (regSecret) {
+      payload.secret = regSecret;
+    }
+
+    setEventRegSubmitting(true);
+    setEventRegSuccessModalOpen(false);
+    try {
+      await postBulandiEventRegistration(webAppUrl, payload);
+      setEventRegSuccessModalOpen(true);
+      setEventRegFromSheetIds(new Set(eventRegSelectedIds));
+    } catch (e) {
+      let msg = e?.message || 'Could not save your choices.';
+      if (e?.name === 'TypeError' || /failed to fetch|network|load failed/i.test(String(msg))) {
+        msg =
+          'Could not reach the Bulandi web app. Check deployment (“Anyone” access), URL in bulandi2026Data.js, and use npm start for local dev (proxy).';
+      }
+      setEventRegSubmitError(msg);
+    } finally {
+      setEventRegSubmitting(false);
+    }
+  };
+
+  const renderSelectableEventList = (events) => (
     <ul className="space-y-2.5">
       {events.map((event) => {
-        const isOpen = openId === event.id;
+        const checked = eventRegSelectedIds.has(event.id);
+        const wasOnRecord = eventRegFromSheetIds.has(event.id);
         return (
           <li
             key={event.id}
             className="rounded-xl border border-violet-100 bg-white shadow-sm overflow-hidden"
           >
-            <button
-              type="button"
-              onClick={() => toggleRow(event.id)}
-              className="w-full flex items-center justify-between gap-3 text-left px-3 py-3 sm:px-4 sm:py-3.5 hover:bg-violet-50/60 transition"
-              aria-expanded={isOpen}
-            >
-              <div className="min-w-0 flex-1">
-                <span className="font-semibold text-gray-900 text-sm sm:text-base block leading-snug">
-                  {event.name}
-                </span>
-                <PrizeBadgesRow prizes={event.prizes} />
-              </div>
-              {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-violet-600 shrink-0" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-violet-600 shrink-0" />
-              )}
-            </button>
-            {isOpen && (
-              <div className="px-4 pb-4 pt-0 grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-t border-violet-50 bg-violet-50/30">
-                <button
-                  type="button"
-                  onClick={() => setRulesEvent(event)}
-                  className="flex min-h-[44px] items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-semibold text-sm border-2 border-violet-300 text-violet-800 bg-white hover:bg-violet-50 transition"
-                >
-                  Rules and regulations
-                </button>
-                {event.registrationUrl ? (
-                  <a
-                    href={event.registrationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex min-h-[44px] items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-semibold text-sm text-center text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 transition shadow-sm"
-                  >
-                    Register
-                  </a>
-                ) : (
-                  <span className="flex min-h-[44px] items-center justify-center py-2.5 px-3 rounded-lg font-semibold text-sm text-center text-gray-500 bg-gray-100 border border-gray-200">
-                    Register — soon
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 sm:gap-4 sm:items-center px-3 py-3 sm:px-4 sm:py-3.5">
+              <div className="flex min-w-0 items-start gap-2 sm:gap-3 sm:pr-2">
+                <label className="flex shrink-0 cursor-pointer pt-0.5 sm:pt-0 sm:self-center">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      setEventRegSelectedIds((prev) => {
+                        const n = new Set(prev);
+                        if (n.has(event.id)) n.delete(event.id);
+                        else n.add(event.id);
+                        return n;
+                      });
+                      setEventRegSuccessModalOpen(false);
+                    }}
+                    className="h-4 w-4 rounded border-violet-300 text-violet-600 focus:ring-violet-500"
+                    aria-label={`Select ${event.name}`}
+                  />
+                </label>
+                <div className="min-w-0 flex flex-col gap-1">
+                  <span className="font-semibold text-gray-900 text-sm sm:text-base leading-snug">
+                    {event.name}
                   </span>
-                )}
-                {event.resultsUrl ? (
-                  <a
-                    href={event.resultsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex min-h-[44px] items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-semibold text-sm text-center text-emerald-900 border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition shadow-sm"
-                  >
-                    <Award className="h-4 w-4 shrink-0" strokeWidth={2.25} aria-hidden />
-                    View results
-                  </a>
-                ) : (
-                  <span className="flex min-h-[44px] items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-semibold text-sm text-center text-emerald-800/70 bg-emerald-50/80 border-2 border-solid border-emerald-400">
-                    <Award className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
-                    Results — soon
-                  </span>
-                )}
+                  {wasOnRecord ? (
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full w-fit">
+                      Already registered
+                    </span>
+                  ) : null}
+                </div>
               </div>
-            )}
+              <div className="min-w-0 flex justify-start">
+                <EventListPrizeColumn prizes={event.prizes} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setRulesEvent(event)}
+                className="flex min-h-[44px] w-full shrink-0 items-center justify-center gap-1.5 rounded-lg border-2 border-violet-300 bg-white px-4 py-2.5 text-sm font-semibold text-violet-800 transition hover:bg-violet-50 sm:w-[11rem]"
+              >
+                Rules and regulations
+              </button>
+            </div>
           </li>
         );
       })}
@@ -984,40 +1196,141 @@ const Bulandi2026Page = () => {
           <h2 id="event-registration-heading" className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
             Event Registration
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 max-w-4xl mb-6 lg:mb-8">
-            Sixteen events in two age groups. Tap an event for <strong>Rules and regulations</strong>,{' '}
-            <strong>Register</strong>, and <strong>View results</strong> (after the event). Each competition shows a{' '}
-            <strong>gold–silver–bronze</strong> prize strip for 1st, 2nd, and 3rd.
+          <p className="w-full text-sm sm:text-base text-gray-600 mb-6 lg:mb-8">
+            Enter your <strong>BR number</strong> and <strong>date of birth</strong>, tap{' '}
+            <strong>Validate details</strong>, then pick competitions and <strong>Submit</strong>. Use{' '}
+            <strong>Rules and regulations</strong> on a row for that event’s full rules.
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 xl:gap-12 items-start">
-          <section className="min-w-0 rounded-2xl border border-violet-100/80 bg-white/40 backdrop-blur-sm p-4 sm:p-5 lg:p-6">
-            <header className="mb-4 lg:mb-5 pb-3 border-b border-violet-200/60">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 shrink-0" aria-hidden />
-                Under 15 years
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1.5 pl-0.5 leading-relaxed">
-                This category is for participants who are{' '}
-                <strong className="font-semibold text-gray-800">over five years of age</strong> and{' '}
-                <strong className="font-semibold text-gray-800">under fifteen years of age</strong>, determined
-                as on the official Bulandi 2026 age reference date.{' '}
-                <span className="text-gray-500">Eight competitions.</span>
+          <div className="mb-8 lg:mb-10 rounded-2xl border-2 border-violet-200/80 bg-white/70 backdrop-blur-sm p-4 sm:p-5 shadow-md">
+            <h3 className="text-base font-bold text-gray-900 mb-3 flex flex-wrap items-center gap-2">
+              <BadgeCheck className="w-5 h-5 text-violet-600 shrink-0" aria-hidden />
+              Your details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
+              <div>
+                <label htmlFor="bulandi-event-reg-br" className="block text-xs font-semibold text-gray-700 mb-1">
+                  BR number <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="bulandi-event-reg-br"
+                  type="text"
+                  autoComplete="off"
+                  placeholder="e.g. BR-1511"
+                  value={eventRegBr}
+                  onChange={(e) => setEventRegBr(e.target.value)}
+                  className="w-full rounded-lg border border-violet-200 px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200"
+                />
+              </div>
+              <div>
+                <label htmlFor="bulandi-event-reg-dob" className="block text-xs font-semibold text-gray-700 mb-1">
+                  Date of birth <span className="text-red-600">*</span>
+                </label>
+                <input
+                  id="bulandi-event-reg-dob"
+                  type="date"
+                  value={eventRegDob}
+                  onChange={(e) => setEventRegDob(e.target.value)}
+                  className="w-full rounded-lg border border-violet-200 px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200"
+                />
+              </div>
+            </div>
+            {eventRegError && (
+              <p className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
+                {eventRegError}
               </p>
-            </header>
-            {renderEventList(eventsUnder15)}
-          </section>
-          <section className="min-w-0 rounded-2xl border border-violet-100/80 bg-white/40 backdrop-blur-sm p-4 sm:p-5 lg:p-6">
-            <header className="mb-4 lg:mb-5 pb-3 border-b border-violet-200/60">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0" aria-hidden />
-                15 years and above
-              </h3>
-              <p className="text-xs text-gray-600 mt-1.5 pl-0.5">Eight competitions</p>
-            </header>
-            {renderEventList(eventsOver15)}
-          </section>
+            )}
+            {eventRegVerifyState === 'ok' && eventRegAgeBucket && (
+              <p className="mb-3 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                <BadgeCheck className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+                <span>
+                  Details validated. Competitions you already signed up for are pre-selected. Adjust your choices
+                  below, then submit.
+                </span>
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={handleEventRegVerify}
+              disabled={eventRegVerifyState === 'loading'}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
+            >
+              {eventRegVerifyState === 'loading' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
+                  Validating your details…
+                </>
+              ) : (
+                <>
+                  <BadgeCheck className="w-4 h-4 shrink-0" aria-hidden />
+                  Validate details
+                </>
+              )}
+            </button>
           </div>
+
+          {eventRegVerifyState === 'ok' && eventRegAgeBucket ? (
+            <section className="w-full min-w-0 rounded-2xl border-2 border-violet-200/80 bg-white/70 backdrop-blur-sm p-4 sm:p-5 shadow-md z-[1]">
+              <header className="mb-3 pb-3 border-b border-violet-200/60">
+                <h3 className="text-base font-bold text-gray-900 mb-3 flex flex-wrap items-center gap-2">
+                  <Trophy
+                    className={`w-5 h-5 shrink-0 ${eventRegAgeBucket === 'under15' ? 'text-cyan-600' : 'text-purple-600'}`}
+                    aria-hidden
+                  />
+                  <span>{eventRegAgeBucket === 'under15' ? 'Under 15 years' : '15 years and above'}</span>
+                  <span
+                    className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
+                      eventRegAgeBucket === 'under15'
+                        ? 'text-cyan-900 bg-cyan-100'
+                        : 'text-purple-900 bg-purple-100'
+                    }`}
+                  >
+                    Your competitions
+                  </span>
+                </h3>
+                {eventRegAgeBucket === 'under15' ? (
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    For participants who are{' '}
+                    <strong className="font-semibold text-gray-800">over five years of age</strong> and{' '}
+                    <strong className="font-semibold text-gray-800">under fifteen years of age</strong>, as on the
+                    official Bulandi 2026 age reference date. <span className="text-gray-500">Eight competitions.</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-600">Nine competitions</p>
+                )}
+              </header>
+              {renderSelectableEventList(eventRegAgeBucket === 'under15' ? eventsUnder15 : eventsOver15)}
+              <div className="mt-6 pt-5 border-t border-violet-200/80">
+                {eventRegSubmitError && (
+                  <p className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
+                    {eventRegSubmitError}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleEventChoiceSubmit}
+                  disabled={eventRegSubmitting}
+                  className="inline-flex w-full sm:w-auto min-w-[200px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
+                >
+                  {eventRegSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
+                      Saving…
+                    </>
+                  ) : (
+                    'Submit'
+                  )}
+                </button>
+              </div>
+            </section>
+          ) : (
+            <div className="w-full rounded-2xl border border-dashed border-violet-200/90 bg-violet-50/40 px-4 py-8 sm:px-6 text-center">
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Enter your details above and tap <strong className="font-semibold text-gray-800">Validate details</strong>{' '}
+                to choose competitions.
+              </p>
+            </div>
+          )}
         </section>
         )}
 
@@ -1190,6 +1503,9 @@ const Bulandi2026Page = () => {
       </div>
 
       {rulesEvent && <RulesModal event={rulesEvent} onClose={() => setRulesEvent(null)} />}
+      {eventRegSuccessModalOpen && (
+        <EventRegistrationSuccessModal onClose={() => setEventRegSuccessModalOpen(false)} />
+      )}
 
       <BulandiRegistrationDrawer
         open={registrationDrawerOpen}

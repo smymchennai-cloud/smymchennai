@@ -1,23 +1,21 @@
+/**
+ * Dev-only: same-origin proxy so GET/POST to the Bulandi web app avoid browser CORS to script.google.com.
+ * Exec URL must match src/config/bulandiWebApp.json (single source of truth).
+ */
+const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
-/**
- * Proxies /__whapi/* → https://gate.whapi.cloud/* so the browser does not send
- * the Bearer token (avoids some CORS/preflight edge cases; token stays in Node).
- * CRA loads .env* into process.env when the dev server starts.
- */
-module.exports = function setupWhapiProxy(app) {
-  const token = (process.env.REACT_APP_WHAPI_TOKEN || '').trim();
-  if (!token) return;
+const { execUrl } = require(path.join(__dirname, 'config', 'bulandiWebApp.json'));
+const EXEC_PATH = new URL(execUrl).pathname;
 
+module.exports = function setupProxy(app) {
   app.use(
-    '/__whapi',
+    '/bulandi-sheet-exec',
     createProxyMiddleware({
-      target: 'https://gate.whapi.cloud',
+      target: 'https://script.google.com',
       changeOrigin: true,
-      pathRewrite: { '^/__whapi': '' },
-      onProxyReq(proxyReq) {
-        proxyReq.setHeader('Authorization', `Bearer ${token}`);
-      },
+      secure: true,
+      pathRewrite: { '^/bulandi-sheet-exec': EXEC_PATH },
     })
   );
 };
