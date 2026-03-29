@@ -21,38 +21,36 @@ export function BulandiSelectableEventList({
             className="rounded-xl border border-violet-100 bg-white shadow-sm overflow-hidden flex flex-col min-h-0"
           >
             <div className="flex flex-col flex-1 gap-3 p-3 sm:p-4">
-              <label htmlFor={inputId} className="flex min-w-0 cursor-pointer select-none flex-col gap-1.5">
-                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                  <input
-                    id={inputId}
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => {
-                      setEventRegSelectedIds((prev) => {
-                        const n = new Set(prev);
-                        if (n.has(event.id)) n.delete(event.id);
-                        else n.add(event.id);
-                        return n;
-                      });
-                      setEventRegSuccessModalOpen(false);
-                    }}
-                    className="h-4 w-4 shrink-0 rounded border-violet-300 text-violet-600 focus:ring-violet-500"
-                    aria-label={`Select ${event.name}`}
-                  />
-                  <span className="min-w-0 font-semibold text-gray-900 text-sm sm:text-base leading-snug">
+              <label htmlFor={inputId} className="flex min-w-0 cursor-pointer select-none gap-2.5 items-start">
+                <input
+                  id={inputId}
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => {
+                    setEventRegSelectedIds((prev) => {
+                      const n = new Set(prev);
+                      if (n.has(event.id)) n.delete(event.id);
+                      else n.add(event.id);
+                      return n;
+                    });
+                    setEventRegSuccessModalOpen(false);
+                  }}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-violet-300 text-violet-600 focus:ring-violet-500"
+                  aria-label={`Select ${event.name}`}
+                />
+                <div className="min-w-0 flex-1 flex flex-col gap-1.5">
+                  <span className="font-semibold text-gray-900 text-sm sm:text-base leading-snug">
                     {event.name}
                   </span>
                   {wasOnRecord ? (
-                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full w-fit">
                       Already registered
                     </span>
                   ) : null}
+                  {blurb ? (
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{blurb}</p>
+                  ) : null}
                 </div>
-                {blurb ? (
-                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed pl-6">
-                    {blurb}
-                  </p>
-                ) : null}
               </label>
               <button
                 type="button"
