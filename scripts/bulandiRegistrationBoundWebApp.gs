@@ -15,7 +15,7 @@
  * Website: set BOTH registrationWebAppUrl and eventRegistrationSheetFetchUrl in bulandi2026Data.js to this same /exec URL.
  *
  * POST JSON with action "eventRegistration" to update event columns for an existing row (matched by BR + DOB):
- *   { "action":"eventRegistration", "br":"BR1520", "dob":"2015-06-01",
+ *   { "action":"eventRegistration", "br":"B1520", "dob":"2015-06-01",
  *     "eligibleEventNames":["Car Race","Solo Dance",...],
  *     "selectedEventNames":["Car Race","GK Crossword"],
  *     "secret":"..." }   // secret only if SUBMIT_SECRET is set in this script
@@ -65,7 +65,7 @@ var BULANDI_SENDER_NAME = 'SMYM Bulandi Chennai';
 var BULANDI_EVENTS_PAGE_URL = '';
 /**
  * Direct link to the Event Registration tab on the site (shown in registration and event-choice emails).
- * BR numbers in all emails use this format with no hyphens (e.g. BR1511).
+ * Registration IDs use prefix B + digits, no hyphens (e.g. B1511). Legacy BR… rows are normalized to B… in emails.
  */
 var BULANDI_EVENT_REGISTRATION_TAB_URL = 'https://smymchennai.in/bulandi-2026#event-registration';
 /** Set false to skip sending mail (e.g. while testing). Applies to registration confirmation and event-choice updates. */
@@ -80,10 +80,10 @@ function buildBulandiWhatsappBody_(registrantName, brNumber, dob, eventsUrl) {
     '',
     'Thank you for registering for ' + BULANDI_EVENT_TITLE + '.',
     '',
-    'Your Bulandi registration number (BR number) is: *' + br + '*',
+    'Your Bulandi registration number (B number) is: *' + br + '*',
     '',
     'Please save this number. When you register for individual events, you will need:',
-    '• Your BR number: ' + br,
+    '• Your B number: ' + br,
     '• Your date of birth (as submitted): ' + dobStr,
     '',
     'Next step: go through the list of events on the Bulandi page and complete registration for each event you wish to take part in.',
@@ -179,6 +179,7 @@ function doPost(e) {
     }
 
     var name = String(body.name || '').trim();
+    var fatherName = String(body.fatherName || '').trim();
     var whatsappNo = String(body.whatsappNo || '').replace(/\D/g, '');
     var phoneAlt = String(body.phoneAlternate || '').replace(/\D/g, '');
     var gender = String(body.gender || '').trim();
@@ -189,6 +190,7 @@ function doPost(e) {
     var payMime = String(body.paymentMimeType || 'image/jpeg');
 
     if (!name) return jsonOut({ ok: false, error: 'Name is required' });
+    if (!fatherName) return jsonOut({ ok: false, error: "Father's name is required" });
     if (whatsappNo.length !== 10) return jsonOut({ ok: false, error: 'WhatsApp number must be 10 digits' });
     if (phoneAlt && phoneAlt.length !== 10) return jsonOut({ ok: false, error: 'Alternate phone must be 10 digits' });
     if (!gender) return jsonOut({ ok: false, error: 'Gender is required' });
@@ -233,10 +235,11 @@ function doPost(e) {
       return jsonOut({ ok: false, error: 'Sheet not found: ' + SHEET_NAME });
     }
 
-    // Row 1 must be headers, same column order (add e.g. "Event list" and trailing '' here if you added that column).
+    // Row 1 must be headers, same column order: BR, Name, Father's Name, WhatsApp, Alt phone, Gender, DOB, Mail, Payment URL (then event columns, etc.).
     sheet.appendRow([
       brNumber,
       name,
+      fatherName,
       whatsappNo,
       phoneAlt || '',
       gender,
@@ -468,11 +471,13 @@ function bulandiHtmlEscape_(s) {
     .replace(/"/g, '&quot;');
 }
 
-/** BR as shown in emails: no hyphens (e.g. BR-1511 → BR1511). */
+/** As shown in emails: no hyphens; legacy BR1234 → B1234. */
 function bulandiBrForEmail_(raw) {
-  return String(raw || '')
+  var s = String(raw || '')
     .replace(/-/g, '')
     .trim();
+  var m = /^BR(\d+)$/i.exec(s);
+  return m ? 'B' + m[1] : s;
 }
 
 /** Violet call-to-action block: Event Registration tab (HTML). */
@@ -556,7 +561,7 @@ function normalizeDobFromSheetCell_(val) {
  */
 function bulandiMatchRowContext_(wantBr, wantDobIso) {
   if (wantBr === null || wantBr === undefined) {
-    return { error: 'Invalid BR number.' };
+    return { error: 'Invalid B number.' };
   }
   var wantDob = String(wantDobIso || '').trim();
   if (!wantDob || !/^\d{4}-\d{2}-\d{2}$/.test(wantDob)) {
@@ -669,7 +674,7 @@ function handleAdminBackstageRowCheckIn_(body) {
   var dobRaw = String(body.dob || '').trim();
   var eventName = String(body.eventName || '').trim();
   if (!brRaw || !dobRaw) {
-    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+    return jsonOut({ ok: false, error: 'B number and date of birth are required.' });
   }
   if (!eventName) {
     return jsonOut({ ok: false, error: 'eventName is required.' });
@@ -716,7 +721,7 @@ function handleAdminOnStageRowCheckIn_(body) {
   var dobRaw = String(body.dob || '').trim();
   var eventName = String(body.eventName || '').trim();
   if (!brRaw || !dobRaw) {
-    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+    return jsonOut({ ok: false, error: 'B number and date of birth are required.' });
   }
   if (!eventName) {
     return jsonOut({ ok: false, error: 'eventName is required.' });
@@ -1174,7 +1179,7 @@ function handleAdminRegistrationDeskCheckIn_(body) {
     .trim()
     .replace(/-/g, '');
   if (!brRaw || !dobRaw) {
-    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+    return jsonOut({ ok: false, error: 'B number and date of birth are required.' });
   }
   var wantBr = parseBrNumeric_(brRaw);
   var wantDob = normalizeDobToIso_(dobRaw);
@@ -1206,7 +1211,7 @@ function handleAdminEventCheckIn_(body, kind) {
   var eventNames = body.eventNames;
 
   if (!brRaw || !dobRaw) {
-    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+    return jsonOut({ ok: false, error: 'B number and date of birth are required.' });
   }
   if (!Array.isArray(eventNames) || eventNames.length === 0) {
     return jsonOut({ ok: false, error: 'Select at least one event to check in.' });
@@ -1267,7 +1272,7 @@ function handleEventRegistrationPost_(body) {
   var selected = body.selectedEventNames;
 
   if (!brRaw || !dobRaw) {
-    return jsonOut({ ok: false, error: 'BR number and date of birth are required.' });
+    return jsonOut({ ok: false, error: 'B number and date of birth are required.' });
   }
   if (!Array.isArray(eligible) || eligible.length === 0) {
     return jsonOut({ ok: false, error: 'eligibleEventNames must be a non-empty array.' });
@@ -1278,7 +1283,7 @@ function handleEventRegistrationPost_(body) {
 
   var wantBr = parseBrNumeric_(brRaw);
   if (wantBr === null) {
-    return jsonOut({ ok: false, error: 'Invalid BR number.' });
+    return jsonOut({ ok: false, error: 'Invalid B number.' });
   }
   var wantDob = normalizeDobToIso_(dobRaw);
   if (!wantDob || !/^\d{4}-\d{2}-\d{2}$/.test(wantDob)) {
@@ -1403,7 +1408,7 @@ function sendBulandiRegistrationConfirmationEmail_(recipientEmail, registrantNam
   var dob = String(dobYyyyMmDd || '').trim();
   var eventsUrl = String(BULANDI_EVENTS_PAGE_URL || '').trim();
 
-  var subject = 'Thank you for registering — ' + BULANDI_EVENT_TITLE + ' • BR ' + br;
+  var subject = 'Thank you for registering — ' + BULANDI_EVENT_TITLE + ' • ' + br;
   var plain = buildBulandiConfirmationPlain_(displayName, br, dob, eventsUrl);
   var html = buildBulandiConfirmationHtml_(displayName, br, dob, eventsUrl);
 
@@ -1436,7 +1441,7 @@ function sendBulandiEventRegistrationUpdateEmail_(recipientEmail, registrantName
   var dob = String(dobYyyyMmDd || '').trim();
   var eventsUrl = String(BULANDI_EVENTS_PAGE_URL || '').trim();
 
-  var subject = 'Event choices updated — ' + BULANDI_EVENT_TITLE + ' • BR ' + br;
+  var subject = 'Event choices updated — ' + BULANDI_EVENT_TITLE + ' • ' + br;
   var plain = buildBulandiEventUpdatePlain_(displayName, br, dob, registeredNames, removedNames, eventsUrl);
   var html = buildBulandiEventUpdateHtml_(displayName, br, dob, registeredNames, removedNames, eventsUrl);
 
@@ -1461,13 +1466,13 @@ function buildBulandiEventUpdatePlain_(name, brNumber, dob, registeredNames, rem
     '',
     'Your competition choices for ' + BULANDI_EVENT_TITLE + ' have been saved. Compared to your previous choices of events, the following changed:',
     '',
-    'Your Bulandi registration number (BR number): ' + brNumber,
+    'Your Bulandi registration number (B number): ' + brNumber,
     'Date of birth (as submitted): ' + dob,
     '',
     'Registered for: ' + reg,
     'Removed from registration: ' + rem,
     '',
-    'If you need to change your selections again, use Event Registration on the Bulandi page with the same BR number and date of birth.',
+    'If you need to change your selections again, use Event Registration on the Bulandi page with the same B number and date of birth.',
   ];
   if (tabUrl) {
     lines.push('');
@@ -1506,11 +1511,11 @@ function buildBulandiEventUpdateHtml_(name, brNumber, dob, registeredNames, remo
       '<p style="margin:0 0 16px;font-size:15px;color:#111827;">Dear <strong>' + safe(name) + '</strong>,</p>' +
       '<p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#111827;">Your <strong>competition choices</strong> have been saved. Compared to your <strong>previous choices of events</strong>, the following changed:</p>' +
       '<div style="background:#fff5f5;border:1px solid #f5c4c4;border-radius:8px;padding:16px 20px;margin:0 0 20px;">' +
-        '<p style="margin:0 0 6px;font-size:11px;font-weight:bold;letter-spacing:0.06em;color:#993c1d;text-transform:uppercase;font-family:Arial,sans-serif;">Your Bulandi Registration Number</p>' +
+        '<p style="margin:0 0 6px;font-size:11px;font-weight:bold;letter-spacing:0.06em;color:#993c1d;text-transform:uppercase;font-family:Arial,sans-serif;">Your Bulandi number (B)</p>' +
         '<p style="margin:0;font-size:26px;font-weight:bold;font-family:ui-monospace,Courier New,monospace;color:#7c1a1a;letter-spacing:0.06em;">' + safe(brNumber) + '</p>' +
       '</div>' +
       '<div style="border-left:3px solid #d85a30;padding:4px 0 4px 16px;margin:0 0 22px;">' +
-        '<p style="margin:0 0 8px;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">BR Number</span> <strong>' + safe(brNumber) + '</strong></p>' +
+        '<p style="margin:0 0 8px;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">B number</span> <strong>' + safe(brNumber) + '</strong></p>' +
         '<p style="margin:0;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">Date of birth</span> <strong>' + safe(dob) + '</strong></p>' +
       '</div>' +
       '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin:0 0 16px;">' +
@@ -1521,7 +1526,7 @@ function buildBulandiEventUpdateHtml_(name, brNumber, dob, registeredNames, remo
         '<p style="margin:0 0 8px;font-size:12px;font-weight:bold;letter-spacing:0.06em;color:#b91c1c;text-transform:uppercase;font-family:Arial,sans-serif;">Removed from registration</p>' +
         remListHtml +
       '</div>' +
-      '<p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:#4b5563;">You can update your selections again anytime from <strong>Event Registration</strong> on the Bulandi page, using the same BR number and date of birth.</p>' +
+      '<p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:#4b5563;">You can update your selections again anytime from <strong>Event Registration</strong> on the Bulandi page, using the same B number and date of birth.</p>' +
       tabBlock +
       generalLink +
       linksFallback +
@@ -1560,10 +1565,10 @@ function buildBulandiConfirmationPlain_(name, brNumber, dob, eventsUrl) {
     '',
     'Thank you for registering for ' + BULANDI_EVENT_TITLE + '.',
     '',
-    'Your Bulandi registration number (BR number) is: ' + brNumber,
+    'Your Bulandi registration number (B number) is: ' + brNumber,
     '',
     'Please save this number. When you register for individual events, you will need:',
-    '  • Your BR number: ' + brNumber,
+    '  • Your B number: ' + brNumber,
     '  • Your date of birth (as submitted): ' + dob,
     '',
     'Next step: open Event Registration on the Bulandi page and choose the competitions you wish to take part in.',
@@ -1607,9 +1612,9 @@ function buildBulandiConfirmationHtml_(name, brNumber, dob, eventsUrl) {
       '<p style="margin:0 0 16px;font-size:15px;color:#111827;">Dear <strong>' + safe(name) + '</strong>,</p>' +
       '<p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:#111827;">Thank you for registering for <strong>' + safe(BULANDI_EVENT_TITLE) + '</strong>. Your participation has been confirmed.</p>' +
 
-      // BR Number card
+      // B number card
       '<div style="background:#fff5f5;border:1px solid #f5c4c4;border-radius:8px;padding:16px 20px;margin:0 0 24px;">' +
-        '<p style="margin:0 0 6px;font-size:11px;font-weight:bold;letter-spacing:0.06em;color:#993c1d;text-transform:uppercase;font-family:Arial,sans-serif;">Your Bulandi Registration Number</p>' +
+        '<p style="margin:0 0 6px;font-size:11px;font-weight:bold;letter-spacing:0.06em;color:#993c1d;text-transform:uppercase;font-family:Arial,sans-serif;">Your Bulandi number (B)</p>' +
         '<p style="margin:0;font-size:26px;font-weight:bold;font-family:ui-monospace,Courier New,monospace;color:#7c1a1a;letter-spacing:0.06em;">' + safe(brNumber) + '</p>' +
       '</div>' +
 
@@ -1617,7 +1622,7 @@ function buildBulandiConfirmationHtml_(name, brNumber, dob, eventsUrl) {
 
       // Credential list
       '<div style="border-left:3px solid #d85a30;padding:4px 0 4px 16px;margin:0 0 20px;">' +
-        '<p style="margin:0 0 8px;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">BR Number</span> <strong>' + safe(brNumber) + '</strong></p>' +
+        '<p style="margin:0 0 8px;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">B number</span> <strong>' + safe(brNumber) + '</strong></p>' +
         '<p style="margin:0;font-size:14px;color:#111827;"><span style="color:#6b7280;display:inline-block;min-width:110px;">Date of birth</span> <strong>' + safe(dob) + '</strong></p>' +
       '</div>' +
 
@@ -1671,7 +1676,7 @@ function nextBrNumber_(pool) {
     var values = sheet.getRange(2, 1, lastRow, 1).getValues();
     for (var i = 0; i < values.length; i++) {
       var cell = String(values[i][0] || '');
-      var m = cell.match(/^BR(\d+)$/i);
+      var m = cell.match(/^B[Rr]?(\d+)$/i);
       if (!m) continue;
       var n = parseInt(m[1], 10);
       if (pool === 'u15') {
@@ -1684,11 +1689,11 @@ function nextBrNumber_(pool) {
 
   var next = maxNum + 1;
   if (pool === 'u15') {
-    if (next > BR_U15_MAX) throw new Error('Under-15 BR range full (BR' + BR_U15_MIN + '-BR' + BR_U15_MAX + ')');
+    if (next > BR_U15_MAX) throw new Error('Under-15 B range full (B' + BR_U15_MIN + '-B' + BR_U15_MAX + ')');
   } else {
-    if (next > BR_O15_MAX) throw new Error('15+ BR range full');
+    if (next > BR_O15_MAX) throw new Error('15+ B range full');
   }
-  return 'BR' + next;
+  return 'B' + next;
 }
 
 function sanitizeFilename_(name) {
@@ -1700,7 +1705,7 @@ function sanitizeFilename_(name) {
 
 /**
  * Run from the Apps Script editor: choose doTest → Run (▶).
- * Verifies bound spreadsheet, tab name, Drive payment folder, age-on-reference samples, and next BR numbers.
+ * Verifies bound spreadsheet, tab name, Drive payment folder, age-on-reference samples, and next B numbers.
  * Does not append sheet rows or upload files.
  */
 function doTest() {
@@ -1748,15 +1753,15 @@ function doTest() {
     if (age === null) {
       log('FAIL age for ' + dob + ' (' + note + ')');
     } else {
-      var pool = age < 15 ? 'u15 (BR ' + BR_U15_MIN + '-' + BR_U15_MAX + ')' : 'o15 (BR ' + BR_O15_MIN + '-' + BR_O15_MAX + ')';
+      var pool = age < 15 ? 'u15 (B' + BR_U15_MIN + '-B' + BR_U15_MAX + ')' : 'o15 (B' + BR_O15_MIN + '-B' + BR_O15_MAX + ')';
       log('  DOB ' + dob + ' → age ' + age + ' → ' + pool + ' | ' + note);
     }
   }
 
   if (sheet) {
     try {
-      log('Next BR for under-15 registrant: ' + nextBrNumber_('u15'));
-      log('Next BR for 15+ registrant: ' + nextBrNumber_('o15'));
+      log('Next B number for under-15 registrant: ' + nextBrNumber_('u15'));
+      log('Next B number for 15+ registrant: ' + nextBrNumber_('o15'));
     } catch (e3) {
       log('FAIL nextBrNumber_: ' + e3.message);
     }

@@ -245,7 +245,7 @@ export function normalizeDobToIso(raw) {
 
 /**
  * True → participant should see Under 15 events; false → 15 and above.
- * BR1500 through BR2999 (inclusive); BR3000+ uses the over-15 list.
+ * Numeric part 1500–2999 → under 15; 3000+ → 15+ (IDs may show as B… or legacy BR…).
  * @param {number} n
  */
 export function isUnder15BrRange(n) {
@@ -284,7 +284,7 @@ function findDobColumnKey(headers) {
   return idx >= 0 ? headers[idx] : null;
 }
 
-/** Shown when BR + DOB do not match a row (or DOB wrong for that BR). */
+/** Shown when B number + DOB do not match a row (or DOB wrong for that ID). */
 export const BULANDI_REGISTRATION_MISMATCH_MESSAGE = 'Mismatch registration details';
 
 /**
@@ -308,7 +308,7 @@ export function findMatchingRegistrationRow(rows, headers, brInput, dobInput) {
   }
 
   const wantBr = parseBrNumeric(brInput);
-  if (wantBr == null) throw new Error('Enter a valid BR number (e.g. BR1511 or 1511).');
+  if (wantBr == null) throw new Error('Enter a valid B number (e.g. B1511, BR1511, or 1511).');
 
   const wantDob = normalizeDobToIso(dobInput);
   if (!wantDob || !/^\d{4}-\d{2}-\d{2}$/.test(wantDob)) {

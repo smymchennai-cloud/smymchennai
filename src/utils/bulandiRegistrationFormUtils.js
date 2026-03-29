@@ -15,16 +15,41 @@ export function isValidCalendarDobYyyyMmDd(v) {
   return birth.getFullYear() === by && birth.getMonth() === bm - 1 && birth.getDate() === bd;
 }
 
+/** Parse yyyy-mm-dd in local calendar (no UTC shift). */
+function parseBulandiDobIsoLocal(iso) {
+  if (!iso || typeof iso !== 'string') return null;
+  const parts = iso.split('-').map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return null;
+  const [y, m, d] = parts;
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+  return dt;
+}
+
+function compareBulandiDobIso(a, b) {
+  const da = parseBulandiDobIsoLocal(a);
+  const db = parseBulandiDobIsoLocal(b);
+  if (!da || !db) return null;
+  const ta = da.getTime();
+  const tb = db.getTime();
+  if (ta < tb) return -1;
+  if (ta > tb) return 1;
+  return 0;
+}
+
 /** DOB checks for Bulandi: before 3 May 2021; run on change/blur in the field (submit still blocks tampering). */
 export function getBulandiDobFieldError(raw) {
   const s = raw == null ? '' : String(raw).trim();
   if (!s) return 'Date of birth is required.';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return 'Enter a valid date of birth.';
   if (!isValidCalendarDobYyyyMmDd(s)) return 'Enter a valid date of birth.';
-  if (s < BULANDI_REG_DOB_INPUT_MIN) {
+  const cmpMin = compareBulandiDobIso(s, BULANDI_REG_DOB_INPUT_MIN);
+  const cmpMax = compareBulandiDobIso(s, BULANDI_REG_DOB_INPUT_MAX);
+  if (cmpMin === null || cmpMax === null) return 'Enter a valid date of birth.';
+  if (cmpMin < 0) {
     return 'Date of birth must be on or after 1 January 1900.';
   }
-  if (s > BULANDI_REG_DOB_INPUT_MAX) {
+  if (cmpMax > 0) {
     return 'Date of birth must be before 3 May 2021.';
   }
   return undefined;
@@ -33,13 +58,22 @@ export function getBulandiDobFieldError(raw) {
 /**
  * Clamp yyyy-mm-dd into Bulandi main-registration bounds. Mobile date pickers often ignore min/max;
  * this keeps the value consistent with desktop.
+ *
+ * Does not rewrite years outside 1900–2021 so transient native date-picker values (e.g. year 0003
+ * while typing 1993) are not snapped to 1900-01-01. String comparison is not used (it wrongly treats
+ * 1993 as after 2021).
  */
 export function clampBulandiRegistrationDobValue(raw) {
   const s = raw == null ? '' : String(raw).trim();
   if (!s) return '';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || !isValidCalendarDobYyyyMmDd(s)) return s;
-  if (s < BULANDI_REG_DOB_INPUT_MIN) return BULANDI_REG_DOB_INPUT_MIN;
-  if (s > BULANDI_REG_DOB_INPUT_MAX) return BULANDI_REG_DOB_INPUT_MAX;
+  const y = Number(s.slice(0, 4));
+  if (y < 1900 || y > 2021) return s;
+  const cmpMin = compareBulandiDobIso(s, BULANDI_REG_DOB_INPUT_MIN);
+  const cmpMax = compareBulandiDobIso(s, BULANDI_REG_DOB_INPUT_MAX);
+  if (cmpMin === null || cmpMax === null) return s;
+  if (cmpMin < 0) return BULANDI_REG_DOB_INPUT_MIN;
+  if (cmpMax > 0) return BULANDI_REG_DOB_INPUT_MAX;
   return s;
 }
 
@@ -69,6 +103,7 @@ export function isValidEmailFormat(raw) {
 
 export const bulandiRegFieldError = {
   name: (v) => (!v.trim() ? 'Name is required.' : undefined),
+  fatherName: (v) => (!String(v ?? '').trim() ? "Father's name is required." : undefined),
   phone: (v) =>
     !TEN_DIGIT_PHONE.test(v) ? 'Enter a valid 10-digit WhatsApp number.' : undefined,
   phoneAlt: (v) => {

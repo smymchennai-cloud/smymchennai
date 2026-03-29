@@ -136,6 +136,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Racing competition—format, equipment, track rules, and safety guidelines come from the coordinators.',
     rules:
       'Eligibility: under 15 years as on the age cut-off date announced by SMYM.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nFormat, equipment, track rules, and safety guidelines will be shared by the coordinators.',
     registrationUrl: '',
@@ -147,6 +149,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
+    shortDescription:
+      'Solo stage performance—duration, music, costume, and stage rules are in the detailed circular.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nDuration, music submission, costume, and stage rules will be published in the detailed circular.',
     registrationUrl: '',
@@ -158,6 +162,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
+    shortDescription:
+      'Stories from sacred narratives—time limit, language, and format confirmed by the organising team.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nStories should draw from sacred / devotional narratives as briefed by the jury. Time limit, language, and presentation format will be confirmed by the organising team.',
     registrationUrl: '',
@@ -169,6 +175,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'General-knowledge crossword—time limit, materials, and tie-breakers are set at the event.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nGeneral-knowledge crossword format, time limit, materials, and tie-breakers will be specified at the event.',
     registrationUrl: '',
@@ -180,6 +188,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Draw-based rounds—mechanics, eligibility, and conduct rules are announced by the coordinators.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nDraw mechanics, eligibility for each round, and conduct rules will be announced by the coordinators.',
     registrationUrl: '',
@@ -191,6 +201,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'No-flame cooking—dish scope, ingredients, time limit, and judging are defined in the event brief.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nNo open flame or fire cooking. Dish scope, ingredients, prep safety, time limit, and judging (taste, presentation, hygiene) will be defined in the event brief. Parent / guardian supervision rules if any will be specified.',
     registrationUrl: '',
@@ -202,6 +214,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
+    shortDescription:
+      'Pageant-style rounds—theme, modest dress code, and judging follow the coordinator circular.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nRounds, theme, dress code (modest, community-appropriate), and judging criteria will follow the coordinator circular.',
     registrationUrl: '',
@@ -213,6 +227,8 @@ export const bulandiSubEvents = [
     ageGroup: 'under15',
     ageGroupLabel: 'Over 5 and under 15 years',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Hands-on build and display—brief, materials, time, and judging rules are shared before the event.',
     rules:
       'Eligibility: under 15 years as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nBrief, materials, build time, and display/judging rules will be shared before the competition.',
     registrationUrl: '',
@@ -225,6 +241,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹21,000 / ₹15,000 / ₹10,000',
+    shortDescription:
+      'Pair dance—style, duration, music, and costume rules from the team; both members need main registration.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off. Pair (duo) entry.\n\nPrizes (1st / 2nd / 3rd): ₹21,000 / ₹15,000 / ₹10,000.\n\nStyle, duration, music, and costume rules will be published by the organising team. Both members must complete main Bulandi registration.',
     registrationUrl: '',
@@ -236,6 +254,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
+    shortDescription:
+      'Spontaneous performance with surprise elements—format, time limits, and rubric at the briefing.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nFormat (improv / spontaneous performance / props-in-a-box, etc.), time limits, and judging rubric will be explained at the briefing.',
     registrationUrl: '',
@@ -247,6 +267,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
+    shortDescription:
+      'Team quiz with trade-off mechanics—size, rounds, and no-aid rules from the quizmaster.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nTeam size, “trade-off” mechanics, rounds, and no-aid rules will be specified by the quizmaster. Tie-breaker procedure applies.',
     registrationUrl: '',
@@ -258,6 +280,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹6,000 / ₹4,000 / ₹2,000',
+    shortDescription:
+      'Head-to-head cooking duel—ingredients, time boxes, and safety norms in the detailed brief.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹6,000 / ₹4,000 / ₹2,000.\n\nDuel format (head-to-head rounds), ingredients, time boxes, and safety/hygiene norms will be shared in the detailed brief.',
     registrationUrl: '',
@@ -269,6 +293,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Design on tote bags—materials, theme, duration, and display rules shared before the event.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nMaterials, theme, duration, and submission/display rules will be shared before the competition.',
     registrationUrl: '',
@@ -280,6 +306,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹11,000 / ₹8,000 / ₹5,000',
+    shortDescription:
+      'Team case presentation—brief, time, judging criteria, and props/slides per coordinator circular.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹11,000 / ₹8,000 / ₹5,000.\n\nCase brief, time per team, judging criteria, and use of props/slides will follow the coordinator circular.',
     registrationUrl: '',
@@ -291,6 +319,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Interactive mystery—roles, clues, and rounds led by the host; family-appropriate content.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nSession structure (roles, clues, discussion rounds), duration, and conduct rules will be set by the game host. Content stays appropriate for a family audience.',
     registrationUrl: '',
@@ -302,6 +332,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Written Hindi (Devanagari)—topic, limits, and submission format from coordinators; original work only.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nTopic or prompt, word/time limits, script (Devanagari), and submission format will be shared by coordinators. Original work only; plagiarism leads to disqualification.',
     registrationUrl: '',
@@ -313,6 +345,8 @@ export const bulandiSubEvents = [
     ageGroup: 'over15',
     ageGroupLabel: '15 years and above',
     prizes: '₹3,000 / ₹2,000 / ₹1,000',
+    shortDescription:
+      'Tech challenge—format, allowed tools, time limits, and judging published by the organising team.',
     rules:
       'Eligibility: 15 years and above as on the announced cut-off.\n\nPrizes (1st / 2nd / 3rd): ₹3,000 / ₹2,000 / ₹1,000.\n\nChallenge format, allowed tools, time limits, and judging criteria will be published by the organising team.',
     registrationUrl: '',

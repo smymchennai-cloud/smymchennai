@@ -53,7 +53,8 @@ export const NAV_ITEMS = ['home', 'about', 'events', 'team', 'gallery', 'registe
 // Bank details for payment
 export const BANK_DETAILS = {
   name: 'SHREE MAHESWARI YUVA MANDAL',
-  bank: 'Karur Vysya Bank - Godown St Branch, Chennai - 600 001',
+  bankName: 'Karur Vysya Bank',
+  branch: 'Godown St Branch, Chennai - 600 001',
   accountNumber: '1755115000000465',
   ifscCode: 'KVBL0001755',
 };

@@ -21,7 +21,7 @@ const TABS = [
     label: 'Registration desk',
     icon: ClipboardList,
     link: BULANDI_2026_ADMIN_LINKS.registrationDesk,
-    hint: 'Main desk arrival — timestamp in today’s ddMMyyyyregistered column (no hyphens; legacy sheet headers still work).',
+    hint: '',
   },
   {
     id: 'backstage',
@@ -45,7 +45,7 @@ function readBulandiAdminTabFromHash() {
   return BULANDI_2026_ADMIN_HASH_TO_TAB[raw] || 'desk';
 }
 
-/** BR 1500–2999 → under-15 list; BR 3000+ → 15+ list (matches registration rules). */
+/** B 1500–2999 → under-15 list; B 3000+ → 15+ list (numeric part; matches registration rules). */
 function eventsEligibleForBr(brInput) {
   const n = parseBrNumeric(brInput);
   if (n == null) return [];
@@ -57,9 +57,9 @@ function eventsEligibleForBr(brInput) {
 function brBucketLabel(brInput) {
   const n = parseBrNumeric(brInput);
   if (n == null) return null;
-  if (isUnder15BrRange(n)) return 'Under 15 (BR 1500–2999)';
-  if (n >= 3000) return '15 years and above (BR 3000+)';
-  return 'BR must be in range 1500+ (under 15: 1500–2999, 15+: 3000+)';
+  if (isUnder15BrRange(n)) return 'Under 15 (B 1500–2999)';
+  if (n >= 3000) return '15 years and above (B 3000+)';
+  return 'B number must be in range 1500+ (under 15: 1500–2999, 15+: 3000+)';
 }
 
 function buildAdminBody(action, rest) {
@@ -98,7 +98,7 @@ export default function Bulandi2026AdminPage() {
             Bulandi 2026 — check-in
           </h1>
           <p className="mt-2 text-sm text-violet-200/90 leading-snug">
-            Venue volunteers: enter BR and DOB as on registration. Updates go to the Bulandi Google Sheet.
+            Venue volunteers: enter B number and DOB as on registration. Updates go to the Bulandi Google Sheet.
           </p>
         </header>
         <nav
@@ -176,7 +176,7 @@ function RegistrationDeskPanel({ webAppUrl, sheetId, fetchUrl }) {
     setMsg({ type: '', text: '' });
     const brClean = br.trim().replace(/-/g, '');
     if (!parseBrNumeric(brClean)) {
-      setMsg({ type: 'err', text: 'Enter a valid BR number (e.g. BR1511).' });
+      setMsg({ type: 'err', text: 'Enter a valid B number (e.g. B1511 or BR1511).' });
       return;
     }
     if (!dob) {
@@ -212,20 +212,16 @@ function RegistrationDeskPanel({ webAppUrl, sheetId, fetchUrl }) {
       <h2 id="desk-heading" className="text-lg font-bold text-white mb-2">
         Registration desk
       </h2>
-      <p className="text-sm text-violet-200/85 mb-4">
-        BR + DOB must match the sheet (hyphens in BR or DOB are ignored). Today’s column is{' '}
-        <span className="font-mono text-violet-100">ddMMyyyyregistered</span> (e.g. 29032026registered; server date).
-      </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
           <label htmlFor="admin-desk-br" className="block text-xs font-semibold text-violet-200 mb-1">
-            BR number
+            B number
           </label>
           <input
             id="admin-desk-br"
             type="text"
             autoComplete="off"
-            placeholder="e.g. BR1511"
+            placeholder="e.g. B1511"
             value={br}
             onChange={(e) => setBr(e.target.value)}
             className="w-full rounded-lg border border-white/20 bg-slate-900/80 px-3 py-2.5 text-sm text-white placeholder:text-violet-400/50 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
@@ -474,7 +470,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
     setMsg({ type: '', text: '' });
 
     if (!parseBrNumeric(br)) {
-      setMsg({ type: 'err', text: 'Enter a valid BR number.' });
+      setMsg({ type: 'err', text: 'Enter a valid B number.' });
       return;
     }
     if (!dob) {
@@ -491,7 +487,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
         { skipCache: true }
       );
       findMatchingRegistrationRow(rows, h, br, dob);
-      setMsg({ type: 'ok', text: 'BR and DOB match the sheet.' });
+      setMsg({ type: 'ok', text: 'B number and DOB match the sheet.' });
     } catch (e) {
       setMsg({ type: 'err', text: e?.message || 'Could not verify.' });
     } finally {
@@ -575,7 +571,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
             <table className="w-full min-w-[360px] text-left text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-white/10 bg-slate-900/60 text-violet-200">
-                  <th className="px-3 py-2 font-semibold">BR number</th>
+                  <th className="px-3 py-2 font-semibold">B number</th>
                   <th className="px-3 py-2 font-semibold">WhatsApp</th>
                   <th className="px-3 py-2 font-semibold">Phone alternate</th>
                   <th className="px-3 py-2 font-semibold min-w-[7rem]">Check-in</th>
@@ -674,13 +670,13 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
             >
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wide text-violet-300 mb-2">
-                  Under 15 (BR 1500–2999)
+                  Under 15 (B 1500–2999)
                 </p>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">{eventsUnder15Sorted.map(renderEventPickRow)}</ul>
               </div>
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wide text-violet-300 mb-2">
-                  15 years and above (BR 3000+)
+                  15 years and above (B 3000+)
                 </p>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">{eventsOver15Sorted.map(renderEventPickRow)}</ul>
               </div>
@@ -715,7 +711,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
               htmlFor={`admin-eligible-${eligibleListKind}-search`}
               className="block text-xs font-semibold text-violet-200 mb-1"
             >
-              Search (BR / WhatsApp / alternate phone / DOB)
+              Search (B number / WhatsApp / alternate phone / DOB)
             </label>
             <input
               id={`admin-eligible-${eligibleListKind}-search`}
@@ -752,7 +748,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
               {loadedUnder15Events.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold uppercase tracking-wide text-violet-300 border-b border-white/10 pb-2">
-                    Under 15 (BR 1500–2999)
+                    Under 15 (B 1500–2999)
                   </h3>
                   <div className="space-y-3">{loadedUnder15Events.map((ev) => renderLoadedEventCard(ev))}</div>
                 </div>
@@ -760,7 +756,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
               {loadedOver15Events.length > 0 ? (
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold uppercase tracking-wide text-violet-300 border-b border-white/10 pb-2">
-                    15 years and above (BR 3000+)
+                    15 years and above (B 3000+)
                   </h3>
                   <div className="space-y-3">{loadedOver15Events.map((ev) => renderLoadedEventCard(ev))}</div>
                 </div>
@@ -775,19 +771,19 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
             <div>
               <label htmlFor={`admin-${action}-br`} className="block text-xs font-semibold text-violet-200 mb-1">
-                BR number
+                B number
               </label>
               <input
                 id={`admin-${action}-br`}
                 type="text"
                 autoComplete="off"
-                placeholder="e.g. BR1511 or BR3001"
+                placeholder="e.g. B1511 or B3001"
                 value={br}
                 onChange={(e) => setBr(e.target.value)}
                 className="w-full rounded-lg border border-white/20 bg-slate-900/80 px-3 py-2.5 text-sm text-white placeholder:text-violet-400/50 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
               />
               <p className="mt-1.5 text-[11px] text-violet-400/90 leading-snug">
-                BR 1500–2999 → under-15 events. BR 3000+ → 15+ events.
+                B 1500–2999 → under-15 events. B 3000+ → 15+ events.
               </p>
             </div>
             <div>

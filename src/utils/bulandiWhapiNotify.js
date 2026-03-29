@@ -63,7 +63,7 @@ export async function sendBulandiWhapiConfirmation({ whatsappNo, brNumber, name,
     `✨ *Jai Mahesh! You're officially in, ${displayName}!* ✨\n\n` +
     `We're thrilled to have you at Kanta J Narayan Rathi Bulandi 2026! Get ready for an unforgettable celebration of talent, culture, and community. 🎊\n\n` +
     `Here are your registration details — keep them handy!\n\n` +
-    `🏷️ *BR Number:* ${brNumber}\n` +
+    `🏷️ *B number:* ${brNumber}\n` +
     `📅 *Date of Birth:* ${dobLine}\n\n` +
     `You'll need these to sign up for events, so don't lose them! 😊\n\n` +
     `📲 *Join the official Bulandi group for updates, schedules & all the excitement:*\n` +

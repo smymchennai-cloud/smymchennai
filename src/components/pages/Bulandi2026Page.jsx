@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   BadgeCheck,
   ChevronRight,
+  FileDown,
   Handshake,
   Loader2,
   Trophy,
@@ -62,6 +63,7 @@ const Bulandi2026Page = () => {
   const [eventRegSuccessModalOpen, setEventRegSuccessModalOpen] = useState(false);
   const [eventRegSubmitError, setEventRegSubmitError] = useState('');
   const [eventRegSubmitting, setEventRegSubmitting] = useState(false);
+  const [eventRulebookDownloading, setEventRulebookDownloading] = useState(false);
   const eventRegVerifiedRef = useRef(false);
 
   useEffect(() => {
@@ -94,7 +96,7 @@ const Bulandi2026Page = () => {
       return;
     }
     if (!parseBrNumeric(eventRegBr)) {
-      setEventRegError('Enter a valid BR number (e.g. BR1511 or 1511).');
+      setEventRegError('Enter a valid B number (e.g. B1511, BR1511, or 1511).');
       setEventRegVerifyState('error');
       return;
     }
@@ -189,6 +191,18 @@ const Bulandi2026Page = () => {
     }
   };
 
+  const handleDownloadEventRulebook = async () => {
+    setEventRulebookDownloading(true);
+    try {
+      const mod = await import('../../utils/bulandiEventRulebookPdf');
+      mod.downloadBulandiEventRulebookPdf();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setEventRulebookDownloading(false);
+    }
+  };
+
   return (
     <div className="relative isolate min-h-screen overflow-x-hidden py-8 sm:py-10 px-4 sm:px-6 lg:px-10 pb-16">
       {/* Absolute (not fixed) + isolate keeps the layer painting behind content reliably */}
@@ -252,6 +266,60 @@ const Bulandi2026Page = () => {
           </div>
         </nav>
 
+        {activeTab === 'sponsors' && (
+        <section
+          id="sponsors"
+          role="tabpanel"
+          aria-labelledby="bulandi-tab-sponsors sponsors-heading"
+          className="mb-10 lg:mb-12 rounded-2xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/80 p-5 sm:p-6 lg:p-8 shadow-lg shadow-amber-900/10 scroll-mt-6"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <Handshake className="w-9 h-9 text-amber-700 shrink-0" strokeWidth={2} aria-hidden />
+            <h2 id="sponsors-heading" className="text-2xl lg:text-3xl font-bold text-gray-900">
+              Sponsors
+            </h2>
+          </div>
+          <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-8">
+            Our partners make Bulandi possible. Title, platinum, and gold supporters are listed below — names and photos will be updated as they are confirmed.
+          </p>
+
+          <div className="space-y-12 lg:space-y-14">
+            <div>
+              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-amber-900/85 mb-5">
+                Title sponsor
+              </h3>
+              <SponsorPersonCard entry={bulandiTitleSponsor} size="title" />
+            </div>
+
+            <div>
+              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-slate-700 mb-5">
+                Platinum sponsors
+              </h3>
+              <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
+                {bulandiPlatinumSponsors.map((entry, i) => (
+                  <li key={`bulandi-platinum-${i}`}>
+                    <SponsorPersonCard entry={entry} size="grid" />
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-amber-900/75 mb-5">
+                Gold sponsors
+              </h3>
+              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                {bulandiGoldSponsors.map((entry, i) => (
+                  <li key={`bulandi-gold-${i}`}>
+                    <SponsorPersonCard entry={entry} size="grid" />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+        )}
+
         {activeTab === 'bulandi-registration' && (
         <div
           id="bulandi-registration"
@@ -298,11 +366,11 @@ const Bulandi2026Page = () => {
                   link when it opens for that specific competition.
                 </p>
 
-                <div className="mt-7 w-full flex flex-col sm:flex-row gap-3 justify-start sm:items-stretch">
+                <div className="mt-7 w-full flex flex-col sm:flex-row sm:flex-wrap gap-3 justify-start sm:items-stretch">
                   <button
                     type="button"
                     onClick={() => setRegistrationDrawerOpen(true)}
-                    className="group flex flex-1 min-w-0 items-center justify-center gap-2 rounded-xl border-2 border-white/50 px-5 py-4 text-base sm:text-lg font-extrabold text-white text-center shadow-lg shadow-red-700/45 transition duration-200 hover:brightness-110 hover:shadow-xl hover:shadow-red-600/50 hover:scale-[1.02] active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-red-100 bg-gradient-to-r from-red-600 via-rose-600 to-red-700"
+                    className="group flex flex-1 min-w-[min(100%,14rem)] sm:min-w-[12rem] items-center justify-center gap-2 rounded-xl border-2 border-white/50 px-5 py-4 text-base sm:text-lg font-extrabold text-white text-center shadow-lg shadow-red-700/45 transition duration-200 hover:brightness-110 hover:shadow-xl hover:shadow-red-600/50 hover:scale-[1.02] active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-red-100 bg-gradient-to-r from-red-600 via-rose-600 to-red-700"
                   >
                     Bulandi Registration
                     <ChevronRight
@@ -310,6 +378,25 @@ const Bulandi2026Page = () => {
                       strokeWidth={2.75}
                       aria-hidden
                     />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleDownloadEventRulebook}
+                    disabled={eventRulebookDownloading}
+                    className="group flex flex-1 min-w-[min(100%,14rem)] sm:min-w-[12rem] items-center justify-center gap-2 rounded-xl border-[3px] border-red-800 bg-white px-5 py-4 text-base sm:text-lg font-extrabold text-red-950 text-center shadow-md transition duration-200 hover:bg-red-50 hover:border-red-600 hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] focus:outline-none focus-visible:ring-4 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-red-100 disabled:opacity-60 disabled:pointer-events-none disabled:hover:scale-100"
+                  >
+                    {eventRulebookDownloading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 shrink-0 animate-spin text-red-700" aria-hidden />
+                        Preparing PDF…
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="h-5 w-5 shrink-0 text-red-700" strokeWidth={2.5} aria-hidden />
+                        Download event rulebook
+                      </>
+                    )}
                   </button>
 
                   {bulandi2026Meta.scheduleUrl ? (
@@ -358,8 +445,8 @@ const Bulandi2026Page = () => {
             Event Registration
           </h2>
           <p className="w-full text-sm sm:text-base text-gray-600 mb-6 lg:mb-8">
-            If you have registered for Bulandi, you can find your <strong>BR number</strong> in your registration
-            confirmation email. Enter your BR number and <strong>date of birth</strong>, tap{' '}
+            If you have registered for Bulandi, you can find your <strong>B number</strong> (Bulandi registration ID)
+            in your registration confirmation email. Enter your B number and <strong>date of birth</strong>, tap{' '}
             <strong>Validate details</strong>, then pick competitions and <strong>Submit</strong>. Use{' '}
             <strong>Rules and regulations</strong> on a row for that event’s full rules.
           </p>
@@ -372,13 +459,13 @@ const Bulandi2026Page = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
               <div>
                 <label htmlFor="bulandi-event-reg-br" className="block text-xs font-semibold text-gray-700 mb-1">
-                  BR number <span className="text-red-600">*</span>
+                  B number <span className="text-red-600">*</span>
                 </label>
                 <input
                   id="bulandi-event-reg-br"
                   type="text"
                   autoComplete="off"
-                  placeholder="e.g. BR1511"
+                  placeholder="e.g. B1511"
                   value={eventRegBr}
                   onChange={(e) => setEventRegBr(e.target.value)}
                   className="w-full rounded-lg border border-violet-200 px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200"
@@ -614,60 +701,6 @@ const Bulandi2026Page = () => {
             </div>
           </section>
         </div>
-        )}
-
-        {activeTab === 'sponsors' && (
-        <section
-          id="sponsors"
-          role="tabpanel"
-          aria-labelledby="bulandi-tab-sponsors sponsors-heading"
-          className="mb-10 lg:mb-12 rounded-2xl border-2 border-amber-200/90 bg-gradient-to-br from-amber-50/90 via-white to-orange-50/80 p-5 sm:p-6 lg:p-8 shadow-lg shadow-amber-900/10 scroll-mt-6"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <Handshake className="w-9 h-9 text-amber-700 shrink-0" strokeWidth={2} aria-hidden />
-            <h2 id="sponsors-heading" className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Sponsors
-            </h2>
-          </div>
-          <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-8">
-            Our partners make Bulandi possible. Title, platinum, and gold supporters are listed below — names and photos will be updated as they are confirmed.
-          </p>
-
-          <div className="space-y-12 lg:space-y-14">
-            <div>
-              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-amber-900/85 mb-5">
-                Title sponsor
-              </h3>
-              <SponsorPersonCard entry={bulandiTitleSponsor} size="title" />
-            </div>
-
-            <div>
-              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-slate-700 mb-5">
-                Platinum sponsors
-              </h3>
-              <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
-                {bulandiPlatinumSponsors.map((entry, i) => (
-                  <li key={`bulandi-platinum-${i}`}>
-                    <SponsorPersonCard entry={entry} size="grid" />
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-amber-900/75 mb-5">
-                Gold sponsors
-              </h3>
-              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                {bulandiGoldSponsors.map((entry, i) => (
-                  <li key={`bulandi-gold-${i}`}>
-                    <SponsorPersonCard entry={entry} size="grid" />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
         )}
       </div>
 

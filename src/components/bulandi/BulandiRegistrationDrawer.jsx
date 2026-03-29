@@ -13,12 +13,14 @@ import {
 
 export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
   const [name, setName] = useState('');
+  const [fatherName, setFatherName] = useState('');
   const [phone, setPhone] = useState('');
   const [phoneAlt, setPhoneAlt] = useState('');
   const [gender, setGender] = useState('');
   const [dob, setDob] = useState('');
   const [email, setEmail] = useState('');
   const [paymentFile, setPaymentFile] = useState(null);
+  const [aadharAcknowledged, setAadharAcknowledged] = useState(false);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -37,12 +39,14 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
   useEffect(() => {
     if (!open) {
       setName('');
+      setFatherName('');
       setPhone('');
       setPhoneAlt('');
       setGender('');
       setDob('');
       setEmail('');
       setPaymentFile(null);
+      setAadharAcknowledged(false);
       setErrors({});
       setSubmitting(false);
       setSubmitError('');
@@ -65,6 +69,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
     const next = {};
     const fields = [
       ['name', name],
+      ['fatherName', fatherName],
       ['phone', phone],
       ['phoneAlt', phoneAlt],
       ['gender', gender],
@@ -75,6 +80,10 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
     for (const [key, val] of fields) {
       const msg = bulandiRegFieldError[key](val);
       if (msg) next[key] = msg;
+    }
+    if (!aadharAcknowledged) {
+      next.aadharAcknowledged =
+        'Please confirm you will bring Aadhaar proof on the event day for verification at the registration desk.';
     }
 
     setErrors(next);
@@ -94,6 +103,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
       const safeName = paymentFile.name.replace(/[^\w.\- ]+/g, '_').slice(0, 180);
       const payload = {
         name: name.trim(),
+        fatherName: fatherName.trim(),
         whatsappNo: phone,
         phoneAlternate: phoneAlt.trim(),
         gender,
@@ -129,7 +139,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
         throw new Error(data.error || 'Registration failed.');
       }
       if (!data.brNumber) {
-        throw new Error('No BR number returned from the server.');
+        throw new Error('No B number returned from the server.');
       }
 
       const br = String(data.brNumber);
@@ -188,6 +198,21 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 space-y-4">
+            <div
+              className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-950 shadow-sm"
+              role="note"
+              aria-label="Registration eligibility"
+            >
+              <p className="font-bold text-amber-950">Disclaimer — who may register</p>
+              <p className="mt-2 leading-relaxed text-amber-950/95">
+                <span className="font-semibold">TKPP Maheshwaris only.</span> Registration is intended for
+                Maheshwaris in <span className="font-semibold">Tamil Nadu</span>,{' '}
+                <span className="font-semibold">Kerala</span>, and{' '}
+                <span className="font-semibold">Puducherry (Pondicherry)</span> only. Please complete this form
+                only if you belong to this group.
+              </p>
+            </div>
+
             <div>
               <label htmlFor="bulandi-reg-name" className="block text-sm font-semibold text-gray-800">
                 Name <span className="text-red-600">*</span>
@@ -207,6 +232,27 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                 aria-invalid={errors.name ? 'true' : 'false'}
               />
               {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="bulandi-reg-father-name" className="block text-sm font-semibold text-gray-800">
+                Father&apos;s name <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="bulandi-reg-father-name"
+                type="text"
+                autoComplete="additional-name"
+                value={fatherName}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setFatherName(v);
+                  applyFieldError('fatherName', v);
+                }}
+                onBlur={(e) => applyFieldError('fatherName', e.target.value)}
+                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                aria-invalid={errors.fatherName ? 'true' : 'false'}
+              />
+              {errors.fatherName && <p className="mt-1 text-xs text-red-600">{errors.fatherName}</p>}
             </div>
 
             <div>
@@ -293,13 +339,13 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                 max={BULANDI_REG_DOB_INPUT_MAX}
                 value={dob}
                 onChange={(e) => {
-                  const v = clampBulandiRegistrationDobValue(e.target.value);
+                  const v = e.target.value;
                   setDob(v);
                   applyFieldError('dob', v);
                 }}
                 onBlur={(e) => {
-                  const v = clampBulandiRegistrationDobValue(e.target.value);
-                  if (v !== e.target.value) setDob(v);
+                  const v = clampBulandiRegistrationDobValue(e.target.value.trim());
+                  if (v !== e.target.value.trim()) setDob(v);
                   applyFieldError('dob', v);
                 }}
                 className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
@@ -332,29 +378,39 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
             <div className="rounded-xl border-2 border-amber-200 bg-amber-50/60 p-4 space-y-3">
               <h3 className="text-sm font-bold text-amber-950">Payment details</h3>
               <p className="text-sm font-semibold text-amber-950/95">
-                Registration cost: <span className="tabular-nums">₹500</span>
+                Registration fees: <span className="tabular-nums">₹500</span>
               </p>
               <p className="rounded-lg bg-red-100 border border-red-200 px-3 py-2 text-xs font-bold text-red-900">
                 No cash — pay only via bank transfer or UPI using the details below, then upload your payment screenshot.
               </p>
-              <div className="text-sm text-gray-800 space-y-1.5">
-                <p>
-                  <span className="text-gray-500">Account name:</span>{' '}
-                  <span className="font-semibold">{BANK_DETAILS.name}</span>
-                </p>
-                <p>
-                  <span className="text-gray-500">Bank:</span>{' '}
-                  <span className="font-medium">{BANK_DETAILS.bank}</span>
-                </p>
-                <p>
-                  <span className="text-gray-500">Account no.:</span>{' '}
-                  <span className="font-mono font-medium">{BANK_DETAILS.accountNumber}</span>
-                </p>
-                <p>
-                  <span className="text-gray-500">IFSC:</span>{' '}
-                  <span className="font-mono font-medium">{BANK_DETAILS.ifscCode}</span>
-                </p>
-              </div>
+              <p className="text-xs text-gray-800 leading-snug">
+                For any payment issues, please WhatsApp{' '}
+                <a
+                  href="https://wa.me/918610447053"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-red-700 underline decoration-red-400 underline-offset-2 hover:text-red-800"
+                >
+                  8610447053
+                </a>
+                .
+              </p>
+              <dl className="grid grid-cols-[8.75rem_1fr] gap-x-3 gap-y-2 text-sm text-gray-800 sm:grid-cols-[10.5rem_1fr]">
+                <dt className="text-gray-600 shrink-0">Account Name</dt>
+                <dd className="m-0 font-semibold text-gray-900 break-words">{BANK_DETAILS.name}</dd>
+                <dt className="text-gray-600 shrink-0">Bank Name</dt>
+                <dd className="m-0 font-medium text-gray-900 break-words">{BANK_DETAILS.bankName}</dd>
+                <dt className="text-gray-600 shrink-0">Branch Name</dt>
+                <dd className="m-0 font-medium text-gray-900 break-words">{BANK_DETAILS.branch}</dd>
+                <dt className="text-gray-600 shrink-0">Account No.</dt>
+                <dd className="m-0 font-mono font-medium text-gray-900 tabular-nums break-all">
+                  {BANK_DETAILS.accountNumber}
+                </dd>
+                <dt className="text-gray-600 shrink-0">IFSC Code</dt>
+                <dd className="m-0 font-mono font-medium text-gray-900 tabular-nums break-all">
+                  {BANK_DETAILS.ifscCode}
+                </dd>
+              </dl>
 
               <div>
                 <p className="text-xs font-bold uppercase tracking-wide text-amber-900/90 mb-2">UPI QR</p>
@@ -396,6 +452,46 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
           </div>
 
           <div className="border-t border-gray-100 bg-white p-4 sm:p-5 shrink-0 space-y-3">
+            <div
+              className={`rounded-lg border px-3 py-3 ${
+                errors.aadharAcknowledged ? 'border-red-300 bg-red-50/80' : 'border-gray-200 bg-gray-50'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  id="bulandi-reg-aadhar-ack"
+                  type="checkbox"
+                  checked={aadharAcknowledged}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setAadharAcknowledged(checked);
+                    setErrors((prev) => {
+                      const n = { ...prev };
+                      if (checked) delete n.aadharAcknowledged;
+                      return n;
+                    });
+                  }}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  aria-invalid={errors.aadharAcknowledged ? 'true' : 'false'}
+                  aria-describedby={
+                    errors.aadharAcknowledged ? 'bulandi-reg-aadhar-ack-error' : undefined
+                  }
+                />
+                <label
+                  htmlFor="bulandi-reg-aadhar-ack"
+                  className="text-sm text-gray-800 leading-snug cursor-pointer select-none"
+                >
+                  <span className="font-semibold text-gray-900">Required:</span> I will carry my{' '}
+                  <span className="font-semibold">Aadhaar proof</span> on the day of the event for verification at
+                  the registration desk. <span className="text-red-600">*</span>
+                </label>
+              </div>
+              {errors.aadharAcknowledged ? (
+                <p id="bulandi-reg-aadhar-ack-error" className="mt-2 text-xs text-red-700 pl-7" role="alert">
+                  {errors.aadharAcknowledged}
+                </p>
+              ) : null}
+            </div>
             {submitError && (
               <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
                 {submitError}
