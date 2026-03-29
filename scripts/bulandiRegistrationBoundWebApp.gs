@@ -31,8 +31,11 @@
  *   adminBackstageEligibleList — { "action","eventName":"Solo Dance" } → { deskColumn, backstageColumn, participants:[{…,backstageCheckedInAt}], … }
  *     backstageCheckedInAt is non-empty when today’s dd-mm-yyyy-back-stage cell has a timestamp.
  *     Participants must have a non-empty value in today’s desk column (ddMMyyyyregistered or legacy dd-mm-yyyy-registered) and the main event column must be Yes / TRUE (checkbox).
+ *   adminBackstageEligibleLists — { "action","eventNames":["Solo Dance",…] } → one sheet read; { deskColumn, backstageColumn, byEvent: { "Solo Dance": { participants, count }, … } }
+ *     Per-event keys match requested names; missing sheet columns use { participants: [], error: "…" }.
  *   adminOnStageRowCheckIn — writes dd-mm-yyyy-on-stage only if today’s dd-mm-yyyy-back-stage cell is set (back stage first).
  *   adminOnStageEligibleList — participants must have today’s back-stage column set + event Yes/TRUE; includes onStageCheckedInAt (not desk column).
+ *   adminOnStageEligibleLists — { "action","eventNames":[…] } → { backstageColumn, onStageColumn, byEvent: { … } } (single read).
  *   adminOnStageCheckIn — same with “On stage — …” per-event columns. Participant must be “Yes” on the main event column.
  *
  * GET (default): gviz JSON (no UrlFetchApp — SpreadsheetApp reads the bound sheet).
@@ -153,11 +156,17 @@ function doPost(e) {
     if (act === 'adminBackstageEligibleList') {
       return handleAdminBackstageEligibleList_(body);
     }
+    if (act === 'adminBackstageEligibleLists') {
+      return handleAdminBackstageEligibleLists_(body);
+    }
     if (act === 'adminBackstageRowCheckIn') {
       return handleAdminBackstageRowCheckIn_(body);
     }
     if (act === 'adminOnStageEligibleList') {
       return handleAdminOnStageEligibleList_(body);
+    }
+    if (act === 'adminOnStageEligibleLists') {
+      return handleAdminOnStageEligibleLists_(body);
     }
     if (act === 'adminOnStageRowCheckIn') {
       return handleAdminOnStageRowCheckIn_(body);
@@ -765,6 +774,310 @@ function handleAdminOnStageRowCheckIn_(body) {
   return jsonOut({ ok: true, checkedInAt: ts, column: colHeaderShown, eventName: eventName });
 }
 
+/** @param {Object} body POST JSON */
+function parseAdminEligibleEventNames_(body) {
+  var raw = body.eventNames;
+  if (Object.prototype.toString.call(raw) !== '[object Array]') {
+    return [];
+  }
+  var out = [];
+  var seen = {};
+  for (var i = 0; i < raw.length; i++) {
+    var n = String(raw[i] || '').trim();
+    if (!n || seen[n]) continue;
+    seen[n] = true;
+    out.push(n);
+  }
+  return out;
+}
+
+/**
+ * Core: back stage eligible participants per event (one sheet read). names = ordered unique display names.
+ * @returns {{ ok: boolean, error?: string, deskColumn?: string, backstageColumn?: string, byEvent?: Object }}
+ */
+function adminBackstageEligibleByEvent_(names) {
+  if (!names || names.length === 0) {
+    return { ok: false, error: 'No event names provided.' };
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return { ok: false, error: 'Sheet not found: ' + SHEET_NAME };
+  }
+
+  var deskHeader = registrationDeskColumnHeaderForToday_();
+  var backstageHeader = backstageColumnHeaderForToday_();
+  var byEvent = {};
+  var ni;
+  for (ni = 0; ni < names.length; ni++) {
+    byEvent[names[ni]] = { participants: [] };
+  }
+
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) {
+    var noteEmpty = 'No registration rows in sheet.';
+    for (ni = 0; ni < names.length; ni++) {
+      byEvent[names[ni]] = { participants: [], count: 0, note: noteEmpty };
+    }
+    return { ok: true, deskColumn: deskHeader, backstageColumn: backstageHeader, byEvent: byEvent };
+  }
+
+  var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+  if (!values || values.length < 2) {
+    for (ni = 0; ni < names.length; ni++) {
+      byEvent[names[ni]] = { participants: [], count: 0, note: 'No registration rows in sheet.' };
+    }
+    return { ok: true, deskColumn: deskHeader, backstageColumn: backstageHeader, byEvent: byEvent };
+  }
+
+  var headerRow = values[0];
+  var deskColIdx = findFirstColumnIndexForKey_(headerRow, deskHeader);
+  if (deskColIdx < 0) {
+    deskColIdx = findFirstColumnIndexForKey_(headerRow, registrationDeskColumnLegacyHyphenatedForToday_());
+  }
+  if (deskColIdx < 0) {
+    var deskNote =
+      'No desk column for today ("' +
+      deskHeader +
+      '" or legacy hyphenated form) yet — list will populate after the first registration desk check-in.';
+    for (ni = 0; ni < names.length; ni++) {
+      byEvent[names[ni]] = { participants: [], count: 0, note: deskNote };
+    }
+    return { ok: true, deskColumn: deskHeader, backstageColumn: backstageHeader, byEvent: byEvent };
+  }
+
+  var brKey = findBrColumnKeyFromRow_(headerRow);
+  if (!brKey) {
+    return { ok: false, error: 'Sheet is missing BR column headers.' };
+  }
+  var brColIdx = findFirstColumnIndexForKey_(headerRow, brKey);
+  if (brColIdx < 0) {
+    return { ok: false, error: 'Could not locate BR column.' };
+  }
+
+  var eventMetas = [];
+  for (var ei = 0; ei < names.length; ei++) {
+    var ename = names[ei];
+    var evColKey = findSheetColumnKeyForEventName_(headerRow, ename);
+    if (!evColKey) {
+      byEvent[ename] = { participants: [], error: 'Sheet has no column for event: ' + ename };
+      continue;
+    }
+    var evColIdx = findFirstColumnIndexForKey_(headerRow, evColKey);
+    if (evColIdx < 0) {
+      byEvent[ename] = { participants: [], error: 'Could not resolve column for event: ' + ename };
+      continue;
+    }
+    eventMetas.push({ name: ename, evColIdx: evColIdx });
+    byEvent[ename] = { participants: [] };
+  }
+
+  var dobKey = findDobColumnKeyFromRow_(headerRow);
+  var dobColIdx = dobKey ? findFirstColumnIndexForKey_(headerRow, dobKey) : -1;
+  var waKey = findWhatsappColumnKeyFromRow_(headerRow);
+  var altKey = findPhoneAlternateColumnKeyFromRow_(headerRow);
+  var waColIdx = waKey ? findFirstColumnIndexForKey_(headerRow, waKey) : -1;
+  var altColIdx = altKey ? findFirstColumnIndexForKey_(headerRow, altKey) : -1;
+  var backstageColIdx = findFirstColumnIndexForKey_(headerRow, backstageHeader);
+
+  for (var r = 1; r < values.length; r++) {
+    var row = values[r];
+    var deskVal = deskColIdx < row.length ? row[deskColIdx] : '';
+    if (!deskCheckInCellIsSet_(deskVal)) continue;
+    var brDisp = String(row[brColIdx] != null ? row[brColIdx] : '').trim();
+    var wa = waColIdx >= 0 && waColIdx < row.length ? String(row[waColIdx] != null ? row[waColIdx] : '').trim() : '';
+    var alt = altColIdx >= 0 && altColIdx < row.length ? String(row[altColIdx] != null ? row[altColIdx] : '').trim() : '';
+    var dobIso =
+      dobColIdx >= 0 && dobColIdx < row.length ? normalizeDobFromSheetCell_(row[dobColIdx]) : '';
+    var backstageCell = backstageColIdx >= 0 && backstageColIdx < row.length ? row[backstageColIdx] : '';
+    var backstageCheckedInAt = checkInCellDisplayString_(backstageCell);
+
+    for (var em = 0; em < eventMetas.length; em++) {
+      var emo = eventMetas[em];
+      var evVal = emo.evColIdx < row.length ? row[emo.evColIdx] : '';
+      if (!cellCountsAsRegisteredForEvent_(evVal)) continue;
+      byEvent[emo.name].participants.push({
+        br: brDisp,
+        whatsappNo: wa,
+        phoneAlternate: alt,
+        dob: dobIso,
+        backstageCheckedInAt: backstageCheckedInAt,
+      });
+    }
+  }
+
+  for (var fi = 0; fi < names.length; fi++) {
+    var fn = names[fi];
+    if (byEvent[fn].error) continue;
+    byEvent[fn].count = byEvent[fn].participants.length;
+  }
+
+  return { ok: true, deskColumn: deskHeader, backstageColumn: backstageHeader, byEvent: byEvent };
+}
+
+/**
+ * Core: on-stage eligible participants per event (one sheet read).
+ */
+function adminOnStageEligibleByEvent_(names) {
+  if (!names || names.length === 0) {
+    return { ok: false, error: 'No event names provided.' };
+  }
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    return { ok: false, error: 'Sheet not found: ' + SHEET_NAME };
+  }
+
+  var backstageHeader = backstageColumnHeaderForToday_();
+  var onStageHeader = onStageColumnHeaderForToday_();
+  var byEvent = {};
+  var ni;
+  for (ni = 0; ni < names.length; ni++) {
+    byEvent[names[ni]] = { participants: [] };
+  }
+
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) {
+    for (ni = 0; ni < names.length; ni++) {
+      byEvent[names[ni]] = { participants: [], count: 0, note: 'No registration rows in sheet.' };
+    }
+    return { ok: true, backstageColumn: backstageHeader, onStageColumn: onStageHeader, byEvent: byEvent };
+  }
+
+  var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+  if (!values || values.length < 2) {
+    for (ni = 0; ni < names.length; ni++) {
+      byEvent[names[ni]] = { participants: [], count: 0, note: 'No registration rows in sheet.' };
+    }
+    return { ok: true, backstageColumn: backstageHeader, onStageColumn: onStageHeader, byEvent: byEvent };
+  }
+
+  var headerRow = values[0];
+  var backstageColIdx = findFirstColumnIndexForKey_(headerRow, backstageHeader);
+  if (backstageColIdx < 0) {
+    var bkNote =
+      'No back stage column for today ("' +
+      backstageHeader +
+      '") yet — list appears after participants complete back stage check-in for today.';
+    for (ni = 0; ni < names.length; ni++) {
+      byEvent[names[ni]] = { participants: [], count: 0, note: bkNote };
+    }
+    return { ok: true, backstageColumn: backstageHeader, onStageColumn: onStageHeader, byEvent: byEvent };
+  }
+
+  var brKey = findBrColumnKeyFromRow_(headerRow);
+  if (!brKey) {
+    return { ok: false, error: 'Sheet is missing BR column headers.' };
+  }
+  var brColIdx = findFirstColumnIndexForKey_(headerRow, brKey);
+  if (brColIdx < 0) {
+    return { ok: false, error: 'Could not locate BR column.' };
+  }
+
+  var eventMetas = [];
+  for (var ei2 = 0; ei2 < names.length; ei2++) {
+    var ename2 = names[ei2];
+    var evColKey2 = findSheetColumnKeyForEventName_(headerRow, ename2);
+    if (!evColKey2) {
+      byEvent[ename2] = { participants: [], error: 'Sheet has no column for event: ' + ename2 };
+      continue;
+    }
+    var evColIdx2 = findFirstColumnIndexForKey_(headerRow, evColKey2);
+    if (evColIdx2 < 0) {
+      byEvent[ename2] = { participants: [], error: 'Could not resolve column for event: ' + ename2 };
+      continue;
+    }
+    eventMetas.push({ name: ename2, evColIdx: evColIdx2 });
+    byEvent[ename2] = { participants: [] };
+  }
+
+  var dobKey2 = findDobColumnKeyFromRow_(headerRow);
+  var dobColIdx2 = dobKey2 ? findFirstColumnIndexForKey_(headerRow, dobKey2) : -1;
+  var waKey2 = findWhatsappColumnKeyFromRow_(headerRow);
+  var altKey2 = findPhoneAlternateColumnKeyFromRow_(headerRow);
+  var waColIdx2 = waKey2 ? findFirstColumnIndexForKey_(headerRow, waKey2) : -1;
+  var altColIdx2 = altKey2 ? findFirstColumnIndexForKey_(headerRow, altKey2) : -1;
+  var onStageColIdx = findFirstColumnIndexForKey_(headerRow, onStageHeader);
+
+  for (var r2 = 1; r2 < values.length; r2++) {
+    var row2 = values[r2];
+    var bkVal = backstageColIdx < row2.length ? row2[backstageColIdx] : '';
+    if (!deskCheckInCellIsSet_(bkVal)) continue;
+    var brDisp2 = String(row2[brColIdx] != null ? row2[brColIdx] : '').trim();
+    var wa2 = waColIdx2 >= 0 && waColIdx2 < row2.length ? String(row2[waColIdx2] != null ? row2[waColIdx2] : '').trim() : '';
+    var alt2 = altColIdx2 >= 0 && altColIdx2 < row2.length ? String(row2[altColIdx2] != null ? row2[altColIdx2] : '').trim() : '';
+    var dobIso2 =
+      dobColIdx2 >= 0 && dobColIdx2 < row2.length ? normalizeDobFromSheetCell_(row2[dobColIdx2]) : '';
+    var onStageCell = onStageColIdx >= 0 && onStageColIdx < row2.length ? row2[onStageColIdx] : '';
+    var onStageCheckedInAt = checkInCellDisplayString_(onStageCell);
+
+    for (var em2 = 0; em2 < eventMetas.length; em2++) {
+      var emo2 = eventMetas[em2];
+      var evVal2 = emo2.evColIdx < row2.length ? row2[emo2.evColIdx] : '';
+      if (!cellCountsAsRegisteredForEvent_(evVal2)) continue;
+      byEvent[emo2.name].participants.push({
+        br: brDisp2,
+        whatsappNo: wa2,
+        phoneAlternate: alt2,
+        dob: dobIso2,
+        onStageCheckedInAt: onStageCheckedInAt,
+      });
+    }
+  }
+
+  for (var fi2 = 0; fi2 < names.length; fi2++) {
+    var fn2 = names[fi2];
+    if (byEvent[fn2].error) continue;
+    byEvent[fn2].count = byEvent[fn2].participants.length;
+  }
+
+  return { ok: true, backstageColumn: backstageHeader, onStageColumn: onStageHeader, byEvent: byEvent };
+}
+
+/**
+ * POST adminBackstageEligibleLists: eventNames[] — one read, grouped results.
+ */
+function handleAdminBackstageEligibleLists_(body) {
+  var names = parseAdminEligibleEventNames_(body);
+  if (names.length === 0) {
+    return jsonOut({ ok: false, error: 'eventNames (non-empty array) is required.' });
+  }
+  var res = adminBackstageEligibleByEvent_(names);
+  if (!res.ok) {
+    return jsonOut({ ok: false, error: res.error });
+  }
+  return jsonOut({
+    ok: true,
+    deskColumn: res.deskColumn,
+    backstageColumn: res.backstageColumn,
+    byEvent: res.byEvent,
+  });
+}
+
+/**
+ * POST adminOnStageEligibleLists: eventNames[] — one read, grouped results.
+ */
+function handleAdminOnStageEligibleLists_(body) {
+  var names = parseAdminEligibleEventNames_(body);
+  if (names.length === 0) {
+    return jsonOut({ ok: false, error: 'eventNames (non-empty array) is required.' });
+  }
+  var res = adminOnStageEligibleByEvent_(names);
+  if (!res.ok) {
+    return jsonOut({ ok: false, error: res.error });
+  }
+  return jsonOut({
+    ok: true,
+    backstageColumn: res.backstageColumn,
+    onStageColumn: res.onStageColumn,
+    byEvent: res.byEvent,
+  });
+}
+
 /**
  * POST adminBackstageEligibleList: eventName (display name, same as sheet column / website).
  * Returns participants with today’s registration-desk check-in set and main event column Yes/TRUE.
@@ -774,117 +1087,25 @@ function handleAdminBackstageEligibleList_(body) {
   if (!eventName) {
     return jsonOut({ ok: false, error: 'eventName is required.' });
   }
-
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    return jsonOut({ ok: false, error: 'Sheet not found: ' + SHEET_NAME });
+  var res = adminBackstageEligibleByEvent_([eventName]);
+  if (!res.ok) {
+    return jsonOut({ ok: false, error: res.error });
   }
-
-  var lastRow = sheet.getLastRow();
-  var lastCol = sheet.getLastColumn();
-  if (lastRow < 2 || lastCol < 1) {
-    return jsonOut({
-      ok: true,
-      deskColumn: registrationDeskColumnHeaderForToday_(),
-      eventName: eventName,
-      participants: [],
-      count: 0,
-      note: 'No registration rows in sheet.',
-    });
+  var slice = res.byEvent[eventName];
+  if (!slice) {
+    return jsonOut({ ok: false, error: 'Internal error resolving event.' });
   }
-
-  var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-  if (!values || values.length < 2) {
-    return jsonOut({
-      ok: true,
-      deskColumn: registrationDeskColumnHeaderForToday_(),
-      eventName: eventName,
-      participants: [],
-      count: 0,
-      note: 'No registration rows in sheet.',
-    });
+  if (slice.error) {
+    return jsonOut({ ok: false, error: slice.error });
   }
-
-  var headerRow = values[0];
-  var deskHeader = registrationDeskColumnHeaderForToday_();
-  var deskColIdx = findFirstColumnIndexForKey_(headerRow, deskHeader);
-  if (deskColIdx < 0) {
-    deskColIdx = findFirstColumnIndexForKey_(headerRow, registrationDeskColumnLegacyHyphenatedForToday_());
-  }
-  if (deskColIdx < 0) {
-    return jsonOut({
-      ok: true,
-      deskColumn: deskHeader,
-      eventName: eventName,
-      participants: [],
-      count: 0,
-      note:
-        'No desk column for today ("' +
-        deskHeader +
-        '" or legacy hyphenated form) yet — list will populate after the first registration desk check-in.',
-    });
-  }
-
-  var evColKey = findSheetColumnKeyForEventName_(headerRow, eventName);
-  if (!evColKey) {
-    return jsonOut({ ok: false, error: 'Sheet has no column for event: ' + eventName });
-  }
-  var evColIdx = findFirstColumnIndexForKey_(headerRow, evColKey);
-  if (evColIdx < 0) {
-    return jsonOut({ ok: false, error: 'Could not resolve column for event: ' + eventName });
-  }
-
-  var brKey = findBrColumnKeyFromRow_(headerRow);
-  if (!brKey) {
-    return jsonOut({ ok: false, error: 'Sheet is missing BR column headers.' });
-  }
-  var brColIdx = findFirstColumnIndexForKey_(headerRow, brKey);
-  if (brColIdx < 0) {
-    return jsonOut({ ok: false, error: 'Could not locate BR column.' });
-  }
-
-  var dobKey = findDobColumnKeyFromRow_(headerRow);
-  var dobColIdx = dobKey ? findFirstColumnIndexForKey_(headerRow, dobKey) : -1;
-
-  var waKey = findWhatsappColumnKeyFromRow_(headerRow);
-  var altKey = findPhoneAlternateColumnKeyFromRow_(headerRow);
-  var waColIdx = waKey ? findFirstColumnIndexForKey_(headerRow, waKey) : -1;
-  var altColIdx = altKey ? findFirstColumnIndexForKey_(headerRow, altKey) : -1;
-
-  var backstageHeader = backstageColumnHeaderForToday_();
-  var backstageColIdx = findFirstColumnIndexForKey_(headerRow, backstageHeader);
-
-  var participants = [];
-  for (var r = 1; r < values.length; r++) {
-    var row = values[r];
-    var deskVal = deskColIdx < row.length ? row[deskColIdx] : '';
-    if (!deskCheckInCellIsSet_(deskVal)) continue;
-    var evVal = evColIdx < row.length ? row[evColIdx] : '';
-    if (!cellCountsAsRegisteredForEvent_(evVal)) continue;
-    var brDisp = String(row[brColIdx] != null ? row[brColIdx] : '').trim();
-    var wa = waColIdx >= 0 && waColIdx < row.length ? String(row[waColIdx] != null ? row[waColIdx] : '').trim() : '';
-    var alt = altColIdx >= 0 && altColIdx < row.length ? String(row[altColIdx] != null ? row[altColIdx] : '').trim() : '';
-    var dobIso =
-      dobColIdx >= 0 && dobColIdx < row.length ? normalizeDobFromSheetCell_(row[dobColIdx]) : '';
-    var backstageCell = backstageColIdx >= 0 && backstageColIdx < row.length ? row[backstageColIdx] : '';
-    var backstageCheckedInAt = checkInCellDisplayString_(backstageCell);
-    participants.push({
-      br: brDisp,
-      whatsappNo: wa,
-      phoneAlternate: alt,
-      dob: dobIso,
-      backstageCheckedInAt: backstageCheckedInAt,
-    });
-  }
-
   return jsonOut({
     ok: true,
-    deskColumn: deskHeader,
-    backstageColumn: backstageHeader,
+    deskColumn: res.deskColumn,
+    backstageColumn: res.backstageColumn,
     eventName: eventName,
-    participants: participants,
-    count: participants.length,
+    participants: slice.participants,
+    count: slice.participants.length,
+    note: slice.note || '',
   });
 }
 
@@ -896,117 +1117,25 @@ function handleAdminOnStageEligibleList_(body) {
   if (!eventName) {
     return jsonOut({ ok: false, error: 'eventName is required.' });
   }
-
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    return jsonOut({ ok: false, error: 'Sheet not found: ' + SHEET_NAME });
+  var res = adminOnStageEligibleByEvent_([eventName]);
+  if (!res.ok) {
+    return jsonOut({ ok: false, error: res.error });
   }
-
-  var lastRow = sheet.getLastRow();
-  var lastCol = sheet.getLastColumn();
-  if (lastRow < 2 || lastCol < 1) {
-    return jsonOut({
-      ok: true,
-      backstageColumn: backstageColumnHeaderForToday_(),
-      onStageColumn: onStageColumnHeaderForToday_(),
-      eventName: eventName,
-      participants: [],
-      count: 0,
-      note: 'No registration rows in sheet.',
-    });
+  var slice = res.byEvent[eventName];
+  if (!slice) {
+    return jsonOut({ ok: false, error: 'Internal error resolving event.' });
   }
-
-  var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-  if (!values || values.length < 2) {
-    return jsonOut({
-      ok: true,
-      backstageColumn: backstageColumnHeaderForToday_(),
-      onStageColumn: onStageColumnHeaderForToday_(),
-      eventName: eventName,
-      participants: [],
-      count: 0,
-      note: 'No registration rows in sheet.',
-    });
+  if (slice.error) {
+    return jsonOut({ ok: false, error: slice.error });
   }
-
-  var headerRow = values[0];
-  var backstageHeader = backstageColumnHeaderForToday_();
-  var backstageColIdx = findFirstColumnIndexForKey_(headerRow, backstageHeader);
-  if (backstageColIdx < 0) {
-    return jsonOut({
-      ok: true,
-      backstageColumn: backstageHeader,
-      onStageColumn: onStageColumnHeaderForToday_(),
-      eventName: eventName,
-      participants: [],
-      count: 0,
-      note:
-        'No back stage column for today ("' +
-        backstageHeader +
-        '") yet — list appears after participants complete back stage check-in for today.',
-    });
-  }
-
-  var evColKey = findSheetColumnKeyForEventName_(headerRow, eventName);
-  if (!evColKey) {
-    return jsonOut({ ok: false, error: 'Sheet has no column for event: ' + eventName });
-  }
-  var evColIdx = findFirstColumnIndexForKey_(headerRow, evColKey);
-  if (evColIdx < 0) {
-    return jsonOut({ ok: false, error: 'Could not resolve column for event: ' + eventName });
-  }
-
-  var brKey = findBrColumnKeyFromRow_(headerRow);
-  if (!brKey) {
-    return jsonOut({ ok: false, error: 'Sheet is missing BR column headers.' });
-  }
-  var brColIdx = findFirstColumnIndexForKey_(headerRow, brKey);
-  if (brColIdx < 0) {
-    return jsonOut({ ok: false, error: 'Could not locate BR column.' });
-  }
-
-  var dobKey = findDobColumnKeyFromRow_(headerRow);
-  var dobColIdx = dobKey ? findFirstColumnIndexForKey_(headerRow, dobKey) : -1;
-
-  var waKey = findWhatsappColumnKeyFromRow_(headerRow);
-  var altKey = findPhoneAlternateColumnKeyFromRow_(headerRow);
-  var waColIdx = waKey ? findFirstColumnIndexForKey_(headerRow, waKey) : -1;
-  var altColIdx = altKey ? findFirstColumnIndexForKey_(headerRow, altKey) : -1;
-
-  var onStageHeader = onStageColumnHeaderForToday_();
-  var onStageColIdx = findFirstColumnIndexForKey_(headerRow, onStageHeader);
-
-  var participants = [];
-  for (var r = 1; r < values.length; r++) {
-    var row = values[r];
-    var bkVal = backstageColIdx < row.length ? row[backstageColIdx] : '';
-    if (!deskCheckInCellIsSet_(bkVal)) continue;
-    var evVal = evColIdx < row.length ? row[evColIdx] : '';
-    if (!cellCountsAsRegisteredForEvent_(evVal)) continue;
-    var brDisp = String(row[brColIdx] != null ? row[brColIdx] : '').trim();
-    var wa = waColIdx >= 0 && waColIdx < row.length ? String(row[waColIdx] != null ? row[waColIdx] : '').trim() : '';
-    var alt = altColIdx >= 0 && altColIdx < row.length ? String(row[altColIdx] != null ? row[altColIdx] : '').trim() : '';
-    var dobIso =
-      dobColIdx >= 0 && dobColIdx < row.length ? normalizeDobFromSheetCell_(row[dobColIdx]) : '';
-    var onStageCell = onStageColIdx >= 0 && onStageColIdx < row.length ? row[onStageColIdx] : '';
-    var onStageCheckedInAt = checkInCellDisplayString_(onStageCell);
-    participants.push({
-      br: brDisp,
-      whatsappNo: wa,
-      phoneAlternate: alt,
-      dob: dobIso,
-      onStageCheckedInAt: onStageCheckedInAt,
-    });
-  }
-
   return jsonOut({
     ok: true,
-    backstageColumn: backstageHeader,
-    onStageColumn: onStageHeader,
+    backstageColumn: res.backstageColumn,
+    onStageColumn: res.onStageColumn,
     eventName: eventName,
-    participants: participants,
-    count: participants.length,
+    participants: slice.participants,
+    count: slice.participants.length,
+    note: slice.note || '',
   });
 }
 

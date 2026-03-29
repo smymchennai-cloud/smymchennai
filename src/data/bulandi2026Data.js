@@ -58,6 +58,22 @@ export const BULANDI_2026_PATH = '/bulandi-2026';
 export const BULANDI_2026_ADMIN_PATH = '/bulandi-2026-admin';
 
 /**
+ * Deep links: same admin page, section from the hash. Bulandi2026AdminPage reads `location.hash` on load and on `hashchange`.
+ */
+export const BULANDI_2026_ADMIN_LINKS = {
+  registrationDesk: `${BULANDI_2026_ADMIN_PATH}#registration-desk`,
+  backStage: `${BULANDI_2026_ADMIN_PATH}#back-stage`,
+  onStage: `${BULANDI_2026_ADMIN_PATH}#on-stage`,
+};
+
+/** Hash fragment (without `#`) → internal tab id in Bulandi2026AdminPage. */
+export const BULANDI_2026_ADMIN_HASH_TO_TAB = {
+  'registration-desk': 'desk',
+  'back-stage': 'backstage',
+  'on-stage': 'onstage',
+};
+
+/**
  * Deep links: same page, tab from the hash. Bulandi2026Page reads `location.hash` on load and on `hashchange`.
  * Use these `href` values in emails, WhatsApp, Events, etc.
  */

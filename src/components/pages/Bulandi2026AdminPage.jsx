@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ClipboardList, Loader2, Mic2, Theater } from 'lucide-react';
-import { bulandi2026Meta, BULANDI_2026_PATH } from '../../data/bulandi2026Data';
+import { ArrowLeft, Check, ClipboardList, Loader2, Mic2, Theater } from 'lucide-react';
+import {
+  bulandi2026Meta,
+  BULANDI_2026_PATH,
+  BULANDI_2026_ADMIN_HASH_TO_TAB,
+  BULANDI_2026_ADMIN_LINKS,
+} from '../../data/bulandi2026Data';
 import {
   fetchBulandiRegistrationTable,
   findMatchingRegistrationRow,
@@ -15,21 +20,30 @@ const TABS = [
     id: 'desk',
     label: 'Registration desk',
     icon: ClipboardList,
+    link: BULANDI_2026_ADMIN_LINKS.registrationDesk,
     hint: 'Main desk arrival — timestamp in today’s ddMMyyyyregistered column (no hyphens; legacy sheet headers still work).',
   },
   {
     id: 'backstage',
     label: 'Back stage check-in',
     icon: Theater,
+    link: BULANDI_2026_ADMIN_LINKS.backStage,
     hint: '',
   },
   {
     id: 'onstage',
     label: 'On stage check-in',
     icon: Mic2,
+    link: BULANDI_2026_ADMIN_LINKS.onStage,
     hint: '',
   },
 ];
+
+function readBulandiAdminTabFromHash() {
+  if (typeof window === 'undefined') return 'desk';
+  const raw = window.location.hash.replace(/^#/, '').trim();
+  return BULANDI_2026_ADMIN_HASH_TO_TAB[raw] || 'desk';
+}
 
 /** BR 1500–2999 → under-15 list; BR 3000+ → 15+ list (matches registration rules). */
 function eventsEligibleForBr(brInput) {
@@ -48,21 +62,19 @@ function brBucketLabel(brInput) {
   return 'BR must be in range 1500+ (under 15: 1500–2999, 15+: 3000+)';
 }
 
-/** One entry per event name (sheet headers match these display names). */
-function allBulandiEventsDistinctSorted() {
-  const byName = new Map();
-  for (const e of eventsUnder15) byName.set(e.name, e);
-  for (const e of eventsOver15) byName.set(e.name, e);
-  return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
-
 function buildAdminBody(action, rest) {
   const secret = (bulandi2026Meta.registrationSubmitSecret || '').trim();
   return { action, ...rest, ...(secret ? { secret } : {}) };
 }
 
 export default function Bulandi2026AdminPage() {
-  const [activeTab, setActiveTab] = useState('desk');
+  const [activeTab, setActiveTab] = useState(() => readBulandiAdminTabFromHash());
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTab(readBulandiAdminTabFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   const webAppUrl = useMemo(() => (bulandi2026Meta.registrationWebAppUrl || '').trim(), []);
   const sheetId = (bulandi2026Meta.eventRegistrationSpreadsheetId || '').trim();
@@ -93,14 +105,14 @@ export default function Bulandi2026AdminPage() {
           className="flex flex-col sm:flex-row gap-2 sm:gap-2 mb-3"
           aria-label="Admin sections"
         >
-          {TABS.map(({ id, label, icon: Icon }) => {
+          {TABS.map(({ id, label, icon: Icon, link }) => {
             const on = activeTab === id;
             return (
-              <button
+              <a
                 key={id}
-                type="button"
-                onClick={() => setActiveTab(id)}
-                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                href={link}
+                aria-current={on ? 'page' : undefined}
+                className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 no-underline ${
                   on
                     ? 'bg-violet-500 text-white shadow-lg shadow-violet-900/40'
                     : 'bg-white/10 text-violet-100 hover:bg-white/15 border border-white/10'
@@ -108,7 +120,7 @@ export default function Bulandi2026AdminPage() {
               >
                 <Icon className="w-4 h-4 shrink-0" aria-hidden />
                 {label}
-              </button>
+              </a>
             );
           })}
         </nav>
@@ -261,6 +273,8 @@ function RegistrationDeskPanel({ webAppUrl, sheetId, fetchUrl }) {
   );
 }
 
+/** @typedef {{ participants: object[], deskColumn?: string, backstageGateColumn?: string, stageColumn?: string, note?: string, error?: string }} EventBundle */
+
 function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, description, eligibleListKind }) {
   const [br, setBr] = useState('');
   const [dob, setDob] = useState('');
@@ -269,48 +283,71 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [msg, setMsg] = useState({ type: '', text: '' });
 
-  const [filterEventName, setFilterEventName] = useState('');
+  const [selectedEventNames, setSelectedEventNames] = useState(() => new Set());
   const [listSearch, setListSearch] = useState('');
-  const [eligibleRows, setEligibleRows] = useState([]);
-  const [eligibleMeta, setEligibleMeta] = useState({
-    deskColumn: '',
-    backstageGateColumn: '',
-    stageColumn: '',
-    note: '',
-  });
+  const [eventBundles, setEventBundles] = useState(() => /** @type {Record<string, EventBundle>} */ ({}));
   const [listLoading, setListLoading] = useState(false);
   const [listErr, setListErr] = useState('');
   const [rowCheckInKey, setRowCheckInKey] = useState('');
   const [listRowMsg, setListRowMsg] = useState({ type: '', text: '' });
 
+  const isBackstageEligible = eligibleListKind === 'backstage';
+  const listEligibleAction = isBackstageEligible ? 'adminBackstageEligibleLists' : 'adminOnStageEligibleLists';
+  const rowCheckInAction = isBackstageEligible ? 'adminBackstageRowCheckIn' : 'adminOnStageRowCheckIn';
+
   const bucketEvents = useMemo(() => eventsEligibleForBr(br), [br]);
   const bucketHint = useMemo(() => brBucketLabel(br), [br]);
 
-  const distinctEvents = useMemo(() => allBulandiEventsDistinctSorted(), []);
+  const eventsUnder15Sorted = useMemo(
+    () => [...eventsUnder15].sort((a, b) => a.name.localeCompare(b.name)),
+    []
+  );
+  const eventsOver15Sorted = useMemo(
+    () => [...eventsOver15].sort((a, b) => a.name.localeCompare(b.name)),
+    []
+  );
 
-  const filteredEligible = useMemo(() => {
+  /** Event names from the last successful “Load participant lists”. */
+  const [loadedEventNames, setLoadedEventNames] = useState([]);
+
+  const loadedUnder15Events = useMemo(() => {
+    const set = new Set(loadedEventNames);
+    return eventsUnder15Sorted.filter((ev) => set.has(ev.name));
+  }, [eventsUnder15Sorted, loadedEventNames]);
+
+  const loadedOver15Events = useMemo(() => {
+    const set = new Set(loadedEventNames);
+    return eventsOver15Sorted.filter((ev) => set.has(ev.name));
+  }, [eventsOver15Sorted, loadedEventNames]);
+
+  const selectionMatchesLoaded = useMemo(() => {
+    if (selectedEventNames.size !== loadedEventNames.length) return false;
+    for (const n of loadedEventNames) {
+      if (!selectedEventNames.has(n)) return false;
+    }
+    return true;
+  }, [selectedEventNames, loadedEventNames]);
+
+  const filterParticipants = useCallback((rows) => {
     const q = listSearch.trim().toLowerCase();
-    if (!q) return eligibleRows;
-    return eligibleRows.filter((p) =>
+    if (!q) return rows;
+    return rows.filter((p) =>
       [p.br, p.whatsappNo, p.phoneAlternate, p.dob].some((x) => String(x ?? '').toLowerCase().includes(q))
     );
-  }, [eligibleRows, listSearch]);
+  }, [listSearch]);
 
-  const rowCheckInKeyFor = (p) => `${String(p.br || '')}|${String(p.dob || '')}`;
-
-  const isBackstageEligible = eligibleListKind === 'backstage';
-  const listEligibleAction = isBackstageEligible ? 'adminBackstageEligibleList' : 'adminOnStageEligibleList';
-  const rowCheckInAction = isBackstageEligible ? 'adminBackstageRowCheckIn' : 'adminOnStageRowCheckIn';
+  const rowCheckInKeyFor = (p, eventName) =>
+    `${String(eventName || '')}|${String(p.br || '')}|${String(p.dob || '')}`;
 
   const onRowDailyStageCheckIn = useCallback(
-    async (p) => {
-      if (!filterEventName) return;
+    async (p, eventName) => {
+      if (!eventName) return;
       const dobIso = String(p.dob || '').trim();
       if (!dobIso || !/^\d{4}-\d{2}-\d{2}$/.test(dobIso)) {
         setListRowMsg({ type: 'err', text: 'This row has no valid DOB on the sheet.' });
         return;
       }
-      const key = rowCheckInKeyFor(p);
+      const key = rowCheckInKeyFor(p, eventName);
       setListRowMsg({ type: '', text: '' });
       setRowCheckInKey(key);
       try {
@@ -319,17 +356,28 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           buildAdminBody(rowCheckInAction, {
             br: String(p.br || '').trim(),
             dob: dobIso,
-            eventName: filterEventName,
+            eventName,
           })
         );
         const at = data.checkedInAt ? String(data.checkedInAt) : '';
         const patchField = isBackstageEligible ? 'backstageCheckedInAt' : 'onStageCheckedInAt';
-        setEligibleRows((prev) =>
-          prev.map((r) => (rowCheckInKeyFor(r) === key ? { ...r, [patchField]: at } : r))
-        );
+        setEventBundles((prev) => {
+          const bundle = prev[eventName];
+          if (!bundle?.participants) return prev;
+          const innerKey = `${String(p.br || '')}|${String(p.dob || '')}`;
+          return {
+            ...prev,
+            [eventName]: {
+              ...bundle,
+              participants: bundle.participants.map((r) =>
+                `${String(r.br || '')}|${String(r.dob || '')}` === innerKey ? { ...r, [patchField]: at } : r
+              ),
+            },
+          };
+        });
         setListRowMsg({
           type: 'ok',
-          text: `Checked in ${p.br || 'participant'}${at ? ` at ${at}` : ''}.`,
+          text: `Checked in ${p.br || 'participant'} (${eventName})${at ? ` at ${at}` : ''}.`,
         });
       } catch (e) {
         setListRowMsg({ type: 'err', text: e?.message || 'Check-in failed.' });
@@ -337,56 +385,85 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
         setRowCheckInKey('');
       }
     },
-    [filterEventName, webAppUrl, rowCheckInAction, isBackstageEligible]
+    [webAppUrl, rowCheckInAction, isBackstageEligible]
   );
 
-  useEffect(() => {
-    if (!eligibleListKind || !filterEventName) {
-      setEligibleRows([]);
-      setEligibleMeta({ deskColumn: '', backstageGateColumn: '', stageColumn: '', note: '' });
-      setListErr('');
+  const toggleListEvent = useCallback((name) => {
+    setListRowMsg({ type: '', text: '' });
+    setSelectedEventNames((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
+
+  const loadParticipantLists = useCallback(async () => {
+    const names = [...selectedEventNames].sort((a, b) => a.localeCompare(b));
+    setListRowMsg({ type: '', text: '' });
+    if (names.length === 0) {
+      setListErr('Select at least one event, then tap “Load participant lists”.');
+      setEventBundles({});
+      setLoadedEventNames([]);
       return;
     }
-    let cancelled = false;
     setListLoading(true);
     setListErr('');
-    (async () => {
-      try {
-        const data = await postBulandiWebApp(
-          webAppUrl,
-          buildAdminBody(listEligibleAction, { eventName: filterEventName })
-        );
-        if (cancelled) return;
-        setEligibleRows(Array.isArray(data.participants) ? data.participants : []);
+    setEventBundles({});
+    setLoadedEventNames([]);
+    try {
+      const data = await postBulandiWebApp(
+        webAppUrl,
+        buildAdminBody(listEligibleAction, { eventNames: names })
+      );
+      const byEvent = data.byEvent && typeof data.byEvent === 'object' ? data.byEvent : {};
+      const next = /** @type {Record<string, EventBundle>} */ ({});
+      const failures = [];
+      for (const eventName of names) {
+        const slice = byEvent[eventName];
+        if (!slice) {
+          const err = 'No data returned for this event.';
+          failures.push(`${eventName}: ${err}`);
+          next[eventName] = { participants: [], error: err };
+          continue;
+        }
+        if (slice.error) {
+          failures.push(`${eventName}: ${slice.error}`);
+          next[eventName] = { participants: [], error: String(slice.error) };
+          continue;
+        }
+        const participants = Array.isArray(slice.participants) ? slice.participants : [];
         if (isBackstageEligible) {
-          setEligibleMeta({
+          next[eventName] = {
+            participants,
             deskColumn: data.deskColumn || '',
-            backstageGateColumn: '',
             stageColumn: data.backstageColumn || '',
-            note: data.note || '',
-          });
+            note: slice.note || '',
+          };
         } else {
-          setEligibleMeta({
-            deskColumn: '',
+          next[eventName] = {
+            participants,
             backstageGateColumn: data.backstageColumn || '',
             stageColumn: data.onStageColumn || '',
-            note: data.note || '',
-          });
+            note: slice.note || '',
+          };
         }
-      } catch (e) {
-        if (!cancelled) {
-          setEligibleRows([]);
-          setEligibleMeta({ deskColumn: '', backstageGateColumn: '', stageColumn: '', note: '' });
-          setListErr(e?.message || 'Could not load list.');
-        }
-      } finally {
-        if (!cancelled) setListLoading(false);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [eligibleListKind, filterEventName, webAppUrl, listEligibleAction, isBackstageEligible]);
+      setEventBundles(next);
+      setLoadedEventNames(names);
+      if (failures.length === names.length) {
+        setListErr(failures.join(' '));
+      } else {
+        setListErr('');
+      }
+    } catch (e) {
+      setEventBundles({});
+      setLoadedEventNames([]);
+      setListErr(e?.message || 'Could not load lists.');
+    } finally {
+      setListLoading(false);
+    }
+  }, [selectedEventNames, webAppUrl, listEligibleAction, isBackstageEligible]);
 
   useEffect(() => {
     const allowed = new Set(bucketEvents.map((e) => e.id));
@@ -446,6 +523,133 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
     }
   }, [action, br, dob, bucketEvents, selectedIds, webAppUrl]);
 
+  function renderEventPickRow(ev) {
+    const on = selectedEventNames.has(ev.name);
+    return (
+      <li key={ev.id}>
+        <button
+          type="button"
+          onClick={() => toggleListEvent(ev.name)}
+          aria-pressed={on}
+          className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+            on
+              ? 'border-emerald-400/50 bg-emerald-950/35 text-white'
+              : 'border-white/15 bg-white/5 text-violet-100 hover:bg-white/10'
+          }`}
+        >
+          <span
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 ${
+              on ? 'border-emerald-400 bg-emerald-500/25 text-emerald-100' : 'border-white/25 bg-slate-900/60 text-transparent'
+            }`}
+            aria-hidden
+          >
+            <Check className="w-4 h-4" strokeWidth={2.75} />
+          </span>
+          <span className="font-medium leading-snug">{ev.name}</span>
+        </button>
+      </li>
+    );
+  }
+
+  function renderLoadedEventCard(ev) {
+    const bundle = eventBundles[ev.name];
+    if (!bundle) return null;
+    const filteredRows = filterParticipants(bundle.participants);
+    return (
+      <div key={ev.id} className="rounded-xl border border-white/15 bg-slate-900/25 overflow-hidden">
+        <div className="border-b border-white/10 bg-white/5 px-3 py-2.5 sm:px-4">
+          <h3 className="text-sm font-bold text-white">{ev.name}</h3>
+          <p className="text-[11px] text-violet-300/90 mt-0.5">
+            {bundle.error
+              ? bundle.error
+              : `${bundle.participants.length} eligible${listSearch.trim() ? ` · ${filteredRows.length} match search` : ''}`}
+          </p>
+          {!bundle.error && bundle.note ? (
+            <p className="text-xs text-amber-200/95 mt-2 rounded-lg border border-amber-500/30 bg-amber-950/35 px-2.5 py-1.5">
+              {bundle.note}
+            </p>
+          ) : null}
+        </div>
+        {bundle.error ? null : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[360px] text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-slate-900/60 text-violet-200">
+                  <th className="px-3 py-2 font-semibold">BR number</th>
+                  <th className="px-3 py-2 font-semibold">WhatsApp</th>
+                  <th className="px-3 py-2 font-semibold">Phone alternate</th>
+                  <th className="px-3 py-2 font-semibold min-w-[7rem]">Check-in</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-4 text-violet-300/80 text-center">
+                      No rows match
+                      {listSearch.trim() ? ' this search' : ' (or none eligible for this event today).'}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRows.map((row, i) => {
+                    const rk = rowCheckInKeyFor(row, ev.name);
+                    const busy = rowCheckInKey === rk;
+                    const dobOk = row.dob && /^\d{4}-\d{2}-\d{2}$/.test(String(row.dob));
+                    const checkedInAt = String(
+                      (isBackstageEligible ? row.backstageCheckedInAt : row.onStageCheckedInAt) || ''
+                    ).trim();
+                    const alreadyIn = checkedInAt.length > 0;
+                    return (
+                      <tr key={`${rk}-${i}`} className="border-b border-white/10 text-white/95">
+                        <td className="px-3 py-2 font-mono">{row.br || '—'}</td>
+                        <td className="px-3 py-2 font-mono">{row.whatsappNo || '—'}</td>
+                        <td className="px-3 py-2 font-mono">{row.phoneAlternate || '—'}</td>
+                        <td className="px-3 py-2 align-top">
+                          {alreadyIn ? (
+                            <div
+                              className="w-full min-h-[48px] rounded-xl border border-emerald-500/45 bg-emerald-950/45 px-3 py-2 flex flex-col items-center justify-center gap-0.5"
+                              role="status"
+                            >
+                              <span className="w-full text-center text-xs font-bold uppercase tracking-wide text-emerald-200">
+                                Checked in
+                              </span>
+                              <span className="w-full text-center text-[11px] sm:text-xs font-mono text-emerald-100/95 leading-tight break-all">
+                                {checkedInAt}
+                              </span>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onRowDailyStageCheckIn(row, ev.name)}
+                              disabled={busy || !dobOk}
+                              title={!dobOk ? 'DOB missing on sheet for this row' : undefined}
+                              className="w-full min-h-[48px] rounded-xl bg-gradient-to-r from-fuchsia-600 to-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 inline-flex items-center justify-center gap-2"
+                            >
+                              {busy ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
+                                  Check-in…
+                                </>
+                              ) : (
+                                'Check-in'
+                              )}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const hasLoadedGroups =
+    !listLoading && (loadedUnder15Events.length > 0 || loadedOver15Events.length > 0);
+
   return (
     <section
       className="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-sm p-5 sm:p-6 shadow-xl"
@@ -460,30 +664,52 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
 
       {eligibleListKind ? (
         <div className="mb-6 space-y-3">
-          <div>
-            <label
-              htmlFor={`admin-eligible-${eligibleListKind}-event`}
-              className="block text-xs font-semibold text-violet-200 mb-1"
+          <fieldset className="rounded-xl border border-white/15 bg-slate-900/30 p-3 sm:p-4">
+            <legend className="px-1 text-xs font-semibold text-violet-200">
+              Events — check all you need, then load once (no request when toggling checkboxes)
+            </legend>
+            <div
+              className="mt-3 space-y-5 max-h-[min(52vh,420px)] overflow-y-auto pr-1"
+              aria-label="Events to include in the next participant fetch"
             >
-              Event
-            </label>
-            <select
-              id={`admin-eligible-${eligibleListKind}-event`}
-              value={filterEventName}
-              onChange={(e) => {
-                setFilterEventName(e.target.value);
-                setListRowMsg({ type: '', text: '' });
-              }}
-              className="w-full rounded-lg border border-white/20 bg-slate-900/90 px-3 py-2.5 text-sm text-white focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-            >
-              <option value="">Select event…</option>
-              {distinctEvents.map((ev) => (
-                <option key={ev.id} value={ev.name}>
-                  {ev.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-violet-300 mb-2">
+                  Under 15 (BR 1500–2999)
+                </p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">{eventsUnder15Sorted.map(renderEventPickRow)}</ul>
+              </div>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wide text-violet-300 mb-2">
+                  15 years and above (BR 3000+)
+                </p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">{eventsOver15Sorted.map(renderEventPickRow)}</ul>
+              </div>
+            </div>
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={loadParticipantLists}
+                disabled={listLoading}
+                className="w-full sm:w-auto min-h-[48px] rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 disabled:opacity-50 inline-flex items-center justify-center gap-2"
+              >
+                {listLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
+                    Loading lists…
+                  </>
+                ) : (
+                  'Load participant lists'
+                )}
+              </button>
+            </div>
+          </fieldset>
+
+          {!selectionMatchesLoaded && loadedEventNames.length > 0 && !listLoading ? (
+            <p className="text-xs text-amber-200/95 rounded-lg border border-amber-500/35 bg-amber-950/35 px-3 py-2">
+              Checkbox selection no longer matches the tables below — tap “Load participant lists” again to refresh.
+            </p>
+          ) : null}
+
           <div>
             <label
               htmlFor={`admin-eligible-${eligibleListKind}-search`}
@@ -495,50 +721,14 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
               id={`admin-eligible-${eligibleListKind}-search`}
               type="search"
               autoComplete="off"
-              placeholder="Type to filter the table…"
+              placeholder="Filters loaded event sections below…"
               value={listSearch}
               onChange={(e) => setListSearch(e.target.value)}
-              disabled={!filterEventName}
+              disabled={loadedEventNames.length === 0}
               className="w-full rounded-lg border border-white/20 bg-slate-900/80 px-3 py-2.5 text-sm text-white placeholder:text-violet-400/50 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:opacity-50"
             />
           </div>
 
-          {eligibleMeta.deskColumn ? (
-            <p className="text-[11px] text-violet-400/90 space-y-0.5">
-              <span className="block">
-                Desk column today: <span className="font-mono text-violet-200">{eligibleMeta.deskColumn}</span>
-                {` · ${eligibleRows.length} listed`}
-              </span>
-              {eligibleMeta.stageColumn ? (
-                <span className="block">
-                  Back stage column today:{' '}
-                  <span className="font-mono text-violet-200">{eligibleMeta.stageColumn}</span>
-                </span>
-              ) : null}
-            </p>
-          ) : null}
-          {!isBackstageEligible && (eligibleMeta.backstageGateColumn || eligibleMeta.stageColumn) ? (
-            <p className="text-[11px] text-violet-400/90 space-y-0.5">
-              {eligibleMeta.backstageGateColumn ? (
-                <span className="block">
-                  Listed after back stage today:{' '}
-                  <span className="font-mono text-violet-200">{eligibleMeta.backstageGateColumn}</span>
-                  {` · ${eligibleRows.length} listed`}
-                </span>
-              ) : null}
-              {eligibleMeta.stageColumn ? (
-                <span className="block">
-                  On stage column today:{' '}
-                  <span className="font-mono text-violet-200">{eligibleMeta.stageColumn}</span>
-                </span>
-              ) : null}
-            </p>
-          ) : null}
-          {eligibleMeta.note ? (
-            <p className="text-xs text-amber-200/95 rounded-lg border border-amber-500/30 bg-amber-950/35 px-3 py-2">
-              {eligibleMeta.note}
-            </p>
-          ) : null}
           {listErr ? (
             <p className="text-sm text-red-200 rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-2" role="alert">
               {listErr}
@@ -557,83 +747,24 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
             </p>
           ) : null}
 
-          {listLoading ? (
-            <p className="inline-flex items-center gap-2 text-sm text-violet-200">
-              <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
-              Loading…
-            </p>
-          ) : null}
-
-          {filterEventName && !listLoading && !listErr ? (
-            <div className="overflow-x-auto rounded-lg border border-white/15">
-              <table className="w-full min-w-[360px] text-left text-xs sm:text-sm">
-                <thead>
-                  <tr className="border-b border-white/15 bg-slate-900/60 text-violet-200">
-                    <th className="px-3 py-2 font-semibold">BR number</th>
-                    <th className="px-3 py-2 font-semibold">WhatsApp</th>
-                    <th className="px-3 py-2 font-semibold">Phone alternate</th>
-                    <th className="px-3 py-2 font-semibold min-w-[7rem]">Check-in</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredEligible.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="px-3 py-4 text-violet-300/80 text-center">
-                        No rows match{listSearch.trim() ? ' this search' : ' (or none eligible for this event today).'}
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredEligible.map((row, i) => {
-                      const rk = rowCheckInKeyFor(row);
-                      const busy = rowCheckInKey === rk;
-                      const dobOk = row.dob && /^\d{4}-\d{2}-\d{2}$/.test(String(row.dob));
-                      const checkedInAt = String(
-                        (isBackstageEligible ? row.backstageCheckedInAt : row.onStageCheckedInAt) || ''
-                      ).trim();
-                      const alreadyIn = checkedInAt.length > 0;
-                      return (
-                        <tr key={`${rk}-${i}`} className="border-b border-white/10 text-white/95">
-                          <td className="px-3 py-2 font-mono">{row.br || '—'}</td>
-                          <td className="px-3 py-2 font-mono">{row.whatsappNo || '—'}</td>
-                          <td className="px-3 py-2 font-mono">{row.phoneAlternate || '—'}</td>
-                          <td className="px-3 py-2 align-top">
-                            {alreadyIn ? (
-                              <div
-                                className="w-full min-h-[48px] rounded-xl border border-emerald-500/45 bg-emerald-950/45 px-3 py-2 flex flex-col items-center justify-center gap-0.5"
-                                role="status"
-                              >
-                                <span className="w-full text-center text-xs font-bold uppercase tracking-wide text-emerald-200">
-                                  Checked in
-                                </span>
-                                <span className="w-full text-center text-[11px] sm:text-xs font-mono text-emerald-100/95 leading-tight break-all">
-                                  {checkedInAt}
-                                </span>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => onRowDailyStageCheckIn(row)}
-                                disabled={busy || !dobOk}
-                                title={!dobOk ? 'DOB missing on sheet for this row' : undefined}
-                                className="w-full min-h-[48px] rounded-xl bg-gradient-to-r from-fuchsia-600 to-violet-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 inline-flex items-center justify-center gap-2"
-                              >
-                                {busy ? (
-                                  <>
-                                    <Loader2 className="w-4 h-4 animate-spin shrink-0" aria-hidden />
-                                    Check-in…
-                                  </>
-                                ) : (
-                                  'Check-in'
-                                )}
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+          {hasLoadedGroups ? (
+            <div className="space-y-8">
+              {loadedUnder15Events.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-violet-300 border-b border-white/10 pb-2">
+                    Under 15 (BR 1500–2999)
+                  </h3>
+                  <div className="space-y-3">{loadedUnder15Events.map((ev) => renderLoadedEventCard(ev))}</div>
+                </div>
+              ) : null}
+              {loadedOver15Events.length > 0 ? (
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wide text-violet-300 border-b border-white/10 pb-2">
+                    15 years and above (BR 3000+)
+                  </h3>
+                  <div className="space-y-3">{loadedOver15Events.map((ev) => renderLoadedEventCard(ev))}</div>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
