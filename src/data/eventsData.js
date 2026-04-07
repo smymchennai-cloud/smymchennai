@@ -16,7 +16,7 @@ export const upcomingEvents = [
     id: 2,
     name: 'AGM',
     date: '2026-05-03',
-    time: '11:00 AM onwards',
+    time: 'TBD',
     venue: 'Rajat Hall, Sindoor Plaza',
     description: 'Annual General Meeting - Review, reflect, and plan ahead',
     status: 'Coming Soon',
