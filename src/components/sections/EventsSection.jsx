@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import { upcomingEvents, pastEvents } from '../../data/eventsData';
 
 // Get styling based on event status
@@ -38,7 +38,7 @@ const getEventStatusStyle = (status) => {
   }
 };
 
-const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
+const EventsSection = ({ onViewFlyer }) => {
   return (
     <section id="events" className="py-20 px-4 bg-gradient-to-br from-gray-50 to-orange-50">
       <div className="max-w-7xl mx-auto">
@@ -127,15 +127,6 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
                           className="flex-1 bg-white text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-100 transition text-sm shadow-sm"
                         >
                           View Details
-                        </button>
-                      )}
-                      {event.name === 'Temple Run 2.0' && (
-                        <button
-                          onClick={() => onOpenRegistration(event)}
-                          className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700"
-                        >
-                          Register Now
-                          <ChevronRight className="ml-1 w-4 h-4" />
                         </button>
                       )}
                     </div>

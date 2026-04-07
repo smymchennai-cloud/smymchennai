@@ -1,6 +1,22 @@
 // Gallery Albums - ordered by past events timeline (newest first)
 export const galleryAlbums = [
   {
+    id: 14,
+    title: 'Temple Run 2.0',
+    folder: 'TempleRun2',
+    category: 'Heritage',
+    description: 'Arunachala Pradakshina — Melmaruvathur, Nomad Café bhajan jamming, Girivalam pradakshina & Arunachaleshwar darshan',
+    date: '2026-04-04',
+    photos: [
+      '/Gallery/TempleRun2/TR1.png',
+      '/Gallery/TempleRun2/TR2.png',
+      '/Gallery/TempleRun2/TR3.png',
+      '/Gallery/TempleRun2/TR4.png',
+      '/Gallery/TempleRun2/TR5.png',
+      '/Gallery/TempleRun2/TR6.png'
+    ]
+  },
+  {
     id: 13,
     title: 'Quietly Powerful',
     folder: 'Quietly-Powerful',

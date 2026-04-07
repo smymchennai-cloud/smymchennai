@@ -13,4 +13,3 @@ export { default as RegisterSection } from './sections/RegisterSection';
 // Modal Components
 export { default as GalleryModal } from './modals/GalleryModal';
 export { default as EventFlyerModal } from './modals/EventFlyerModal';
-export { default as EventRegistrationDrawer } from './modals/EventRegistrationDrawer';

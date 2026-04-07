@@ -9,8 +9,7 @@ import {
   GallerySection,
   RegisterSection,
   GalleryModal,
-  EventFlyerModal,
-  EventRegistrationDrawer
+  EventFlyerModal
 } from './components';
 import MemberRegistrationPage from './components/pages/MemberRegistrationPage';
 
@@ -20,8 +19,6 @@ const App = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const [selectedEventFlyer, setSelectedEventFlyer] = useState(null);
-  const [registrationEvent, setRegistrationEvent] = useState(null);
-
   // Close modal on Escape key
   useEffect(() => {
     const handleEscape = (e) => {
@@ -72,7 +69,6 @@ const App = () => {
       {/* Events Section */}
       <EventsSection 
         onViewFlyer={setSelectedEventFlyer}
-        onOpenRegistration={setRegistrationEvent}
       />
 
       {/* Team Section */}
@@ -99,12 +95,6 @@ const App = () => {
         onClose={() => setSelectedEventFlyer(null)} 
       />
 
-      {/* Event Registration Drawer */}
-      <EventRegistrationDrawer 
-        isOpen={!!registrationEvent}
-        event={registrationEvent}
-        onClose={() => setRegistrationEvent(null)}
-      />
     </div>
   );
 };
