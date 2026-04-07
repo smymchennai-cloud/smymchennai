@@ -4,16 +4,6 @@ import { BULANDI_2026_LINKS } from './bulandi2026Data';
 export const upcomingEvents = [
   {
     id: 1,
-    name: 'Temple Run 2.0',
-    date: '2026-04-04',
-    time: '2 Days (Pradakshina)',
-    venue: 'Tiruvannamalai',
-    description: 'Sacred 14-km Arunachala Pradakshina visiting eight Ashtalingams.',
-    status: 'Coming Soon',
-    flyer: '/photos/Temple-run2.0.png'
-  },
-  {
-    id: 2,
     name: 'Vispott',
     date: "TBD",
     time: "TBD",
@@ -23,17 +13,17 @@ export const upcomingEvents = [
     flyer: '/photos/Vispott.png'
   },
   {
-    id: 3,
+    id: 2,
     name: 'AGM',
     date: '2026-05-03',
-    time: 'TBA',
-    venue: 'TBA',
+    time: '11:00 AM onwards',
+    venue: 'Rajat Hall, Sindoor Plaza',
     description: 'Annual General Meeting - Review, reflect, and plan ahead',
-    status: 'Scheduled',
+    status: 'Coming Soon',
     flyer: null
   },
   {
-    id: 4,
+    id: 3,
     name: 'Bulandi 2026',
     date: '2026-07-26',
     time: 'TBA',
@@ -47,6 +37,14 @@ export const upcomingEvents = [
 
 // Past Events
 export const pastEvents = [
+  {
+    name: 'Temple Run 2.0',
+    date: '2026-04-04',
+    attendees: 38,
+    description: 'Temple Run 2.0 to Arunachala Pradakshina started with a visit to Melmaruvathur Temple followed by Bhajan Jamming at Nomad Café. The highlight of this trip was 14kms pradakshina around Girivalam covering Ashtalingam on foot at 1am followed by Arunachaleshwar darshan at 5am.',
+    coordinator: 'Ankit Rathi',
+    specialMention: 'Shri Ramratan Chandak'
+  },
   { 
     name: 'Quietly Powerful', 
     date: '2026-03-08', 
