@@ -1,3 +1,5 @@
+import { BULANDI_2026_LINKS } from './bulandi2026Data';
+
 // Upcoming Events
 export const upcomingEvents = [
   {
@@ -38,7 +40,8 @@ export const upcomingEvents = [
     venue: 'TBA',
     description: 'Annual cultural extravaganza celebrating youth talent and community spirit',
     status: 'Save the Date',
-    flyer: null
+    flyer: null,
+    detailsPath: BULANDI_2026_LINKS.bulandiRegistration
   }
 ];
 

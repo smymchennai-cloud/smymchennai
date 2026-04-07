@@ -13,9 +13,15 @@ import {
   EventRegistrationDrawer
 } from './components';
 import MemberRegistrationPage from './components/pages/MemberRegistrationPage';
+import Bulandi2026Page from './components/pages/Bulandi2026Page';
+import Bulandi2026AdminPage from './components/pages/Bulandi2026AdminPage';
+import { BULANDI_2026_ADMIN_PATH } from './data/bulandi2026Data';
 
 const App = () => {
-  const isMemberRegistrationPage = window.location.pathname === '/member-registration';
+  const path = window.location.pathname;
+  const isMemberRegistrationPage = path === '/member-registration';
+  const isBulandi2026Page = path === '/bulandi-2026';
+  const isBulandi2026AdminPage = path === BULANDI_2026_ADMIN_PATH;
   const [activeSection, setActiveSection] = useState('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
@@ -53,6 +59,14 @@ const App = () => {
     return <MemberRegistrationPage />;
   }
 
+  if (isBulandi2026Page) {
+    return <Bulandi2026Page />;
+  }
+
+  if (isBulandi2026AdminPage) {
+    return <Bulandi2026AdminPage />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
       {/* Header */}
@@ -64,7 +78,7 @@ const App = () => {
       />
 
       {/* Hero Section */}
-      <HeroSection scrollToSection={scrollToSection} />
+      <HeroSection />
 
       {/* About Section */}
       <AboutSection />

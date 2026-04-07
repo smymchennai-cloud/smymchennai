@@ -517,7 +517,8 @@ const TempleRunForm = () => {
         </h6>
         <div className="text-sm space-y-2 text-gray-700">
           <p><span className="text-gray-500">Name:</span> <span className="font-medium">{BANK_DETAILS.name}</span></p>
-          <p><span className="text-gray-500">Bank:</span> <span className="font-medium">{BANK_DETAILS.bank}</span></p>
+          <p><span className="text-gray-500">Bank:</span> <span className="font-medium">{BANK_DETAILS.bankName}</span></p>
+          <p><span className="text-gray-500">Branch:</span> <span className="font-medium">{BANK_DETAILS.branch}</span></p>
           <p><span className="text-gray-500">Account No:</span> <span className="font-mono font-medium">{BANK_DETAILS.accountNumber}</span></p>
           <p><span className="text-gray-500">IFSC Code:</span> <span className="font-mono font-medium">{BANK_DETAILS.ifscCode}</span></p>
         </div>
