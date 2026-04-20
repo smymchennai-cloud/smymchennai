@@ -127,7 +127,7 @@ const EventsSection = ({ onViewFlyer, onOpenRegistration }) => {
                             href={event.detailsPath}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 shadow-sm"
+                            className="flex-1 py-2 rounded-lg font-semibold transition flex items-center justify-center text-sm bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white hover:brightness-110 shadow-sm shadow-violet-600/20"
                           >
                             Register Now
                             <ChevronRight className="ml-1 w-4 h-4" />

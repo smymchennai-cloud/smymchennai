@@ -82,7 +82,7 @@ export default function Bulandi2026AdminPage() {
 
   return (
     <div className="relative isolate min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 py-8 sm:py-10 px-4 sm:px-6 text-white">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_30%_20%,#a78bfa_0%,transparent_45%),radial-gradient(circle_at_70%_80%,#f472b6_0%,transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_30%_20%,#a78bfa_0%,transparent_45%),radial-gradient(circle_at_70%_80%,#c084fc_0%,transparent_40%)]" />
 
       <div className="relative z-10 mx-auto w-full max-w-3xl">
         <a
@@ -130,9 +130,9 @@ export default function Bulandi2026AdminPage() {
         ) : null}
 
         {!webAppUrl || (!fetchUrl && !sheetId) ? (
-          <p className="rounded-xl border border-amber-500/50 bg-amber-950/40 px-4 py-3 text-sm text-amber-100">
-            Configure <code className="text-amber-50">registrationWebAppUrl</code> and sheet fetch settings in{' '}
-            <code className="text-amber-50">bulandi2026Data.js</code> / <code className="text-amber-50">bulandiWebApp.json</code>.
+          <p className="rounded-xl border border-violet-400/45 bg-violet-950/45 px-4 py-3 text-sm text-violet-100">
+            Configure <code className="text-fuchsia-100/95">registrationWebAppUrl</code> and sheet fetch settings in{' '}
+            <code className="text-fuchsia-100/95">bulandi2026Data.js</code> / <code className="text-fuchsia-100/95">bulandiWebApp.json</code>.
           </p>
         ) : null}
 
@@ -243,7 +243,7 @@ function RegistrationDeskPanel({ webAppUrl, sheetId, fetchUrl }) {
       {msg.text ? (
         <p
           className={`mb-4 text-sm rounded-lg px-3 py-2 ${
-            msg.type === 'ok' ? 'bg-emerald-950/60 text-emerald-100 border border-emerald-500/30' : 'bg-red-950/50 text-red-100 border border-red-500/30'
+            msg.type === 'ok' ? 'bg-violet-950/55 text-violet-100 border border-violet-400/35' : 'bg-fuchsia-950/45 text-fuchsia-100 border border-fuchsia-500/35'
           }`}
           role={msg.type === 'err' ? 'alert' : 'status'}
         >
@@ -529,13 +529,13 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           aria-pressed={on}
           className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
             on
-              ? 'border-emerald-400/50 bg-emerald-950/35 text-white'
+              ? 'border-fuchsia-400/45 bg-violet-950/40 text-white'
               : 'border-white/15 bg-white/5 text-violet-100 hover:bg-white/10'
           }`}
         >
           <span
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 ${
-              on ? 'border-emerald-400 bg-emerald-500/25 text-emerald-100' : 'border-white/25 bg-slate-900/60 text-transparent'
+              on ? 'border-fuchsia-400 bg-fuchsia-500/20 text-fuchsia-50' : 'border-white/25 bg-slate-900/60 text-transparent'
             }`}
             aria-hidden
           >
@@ -561,7 +561,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
               : `${bundle.participants.length} eligible${listSearch.trim() ? ` · ${filteredRows.length} match search` : ''}`}
           </p>
           {!bundle.error && bundle.note ? (
-            <p className="text-xs text-amber-200/95 mt-2 rounded-lg border border-amber-500/30 bg-amber-950/35 px-2.5 py-1.5">
+            <p className="text-xs text-violet-200/95 mt-2 rounded-lg border border-violet-400/30 bg-violet-950/40 px-2.5 py-1.5">
               {bundle.note}
             </p>
           ) : null}
@@ -602,13 +602,13 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
                         <td className="px-3 py-2 align-top">
                           {alreadyIn ? (
                             <div
-                              className="w-full min-h-[48px] rounded-xl border border-emerald-500/45 bg-emerald-950/45 px-3 py-2 flex flex-col items-center justify-center gap-0.5"
+                              className="w-full min-h-[48px] rounded-xl border border-violet-400/45 bg-violet-950/45 px-3 py-2 flex flex-col items-center justify-center gap-0.5"
                               role="status"
                             >
-                              <span className="w-full text-center text-xs font-bold uppercase tracking-wide text-emerald-200">
+                              <span className="w-full text-center text-xs font-bold uppercase tracking-wide text-violet-200">
                                 Checked in
                               </span>
-                              <span className="w-full text-center text-[11px] sm:text-xs font-mono text-emerald-100/95 leading-tight break-all">
+                              <span className="w-full text-center text-[11px] sm:text-xs font-mono text-violet-100/95 leading-tight break-all">
                                 {checkedInAt}
                               </span>
                             </div>
@@ -701,7 +701,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           </fieldset>
 
           {!selectionMatchesLoaded && loadedEventNames.length > 0 && !listLoading ? (
-            <p className="text-xs text-amber-200/95 rounded-lg border border-amber-500/35 bg-amber-950/35 px-3 py-2">
+            <p className="text-xs text-violet-200/95 rounded-lg border border-violet-400/35 bg-violet-950/40 px-3 py-2">
               Checkbox selection no longer matches the tables below — tap “Load participant lists” again to refresh.
             </p>
           ) : null}
@@ -726,7 +726,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           </div>
 
           {listErr ? (
-            <p className="text-sm text-red-200 rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-2" role="alert">
+            <p className="text-sm text-fuchsia-100 rounded-lg border border-fuchsia-500/35 bg-fuchsia-950/40 px-3 py-2" role="alert">
               {listErr}
             </p>
           ) : null}
@@ -734,8 +734,8 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
             <p
               className={`text-sm rounded-lg px-3 py-2 ${
                 listRowMsg.type === 'ok'
-                  ? 'bg-emerald-950/60 text-emerald-100 border border-emerald-500/30'
-                  : 'bg-red-950/50 text-red-100 border border-red-500/30'
+                  ? 'bg-violet-950/55 text-violet-100 border border-violet-400/35'
+                  : 'bg-fuchsia-950/45 text-fuchsia-100 border border-fuchsia-500/35'
               }`}
               role={listRowMsg.type === 'err' ? 'alert' : 'status'}
             >
@@ -819,7 +819,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           {msg.text ? (
             <p
               className={`mb-4 text-sm rounded-lg px-3 py-2 ${
-                msg.type === 'ok' ? 'bg-emerald-950/60 text-emerald-100 border border-emerald-500/30' : 'bg-red-950/50 text-red-100 border border-red-500/30'
+                msg.type === 'ok' ? 'bg-violet-950/55 text-violet-100 border border-violet-400/35' : 'bg-fuchsia-950/45 text-fuchsia-100 border border-fuchsia-500/35'
               }`}
               role={msg.type === 'err' ? 'alert' : 'status'}
             >
@@ -828,7 +828,7 @@ function EventCheckInPanel({ webAppUrl, sheetId, fetchUrl, action, title, descri
           ) : null}
 
           {parseBrNumeric(br) != null && bucketEvents.length === 0 ? (
-            <p className="mb-4 text-xs text-amber-200/90 rounded-lg border border-amber-500/30 bg-amber-950/30 px-3 py-2">
+            <p className="mb-4 text-xs text-violet-200/90 rounded-lg border border-violet-400/30 bg-violet-950/35 px-3 py-2">
               {brBucketLabel(br)}
             </p>
           ) : null}

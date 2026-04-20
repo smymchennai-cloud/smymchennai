@@ -176,20 +176,30 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
       role="presentation"
     >
       <aside
-        className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl motion-safe:transition-transform motion-safe:duration-300"
+        className="flex h-full w-full max-w-md flex-col border-l border-white/20 bg-gradient-to-b from-white via-slate-50/90 to-white shadow-[0_0_0_1px_rgba(15,23,42,0.06),0_25px_80px_-20px_rgba(15,23,42,0.45)] motion-safe:transition-transform motion-safe:duration-300"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="bulandi-reg-drawer-title"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-4 sm:px-5">
-          <h2 id="bulandi-reg-drawer-title" className="text-lg font-bold text-gray-900">
-            Bulandi registration
-          </h2>
+        <div className="relative flex items-center justify-between gap-3 overflow-hidden border-b border-white/10 bg-gradient-to-br from-slate-900 via-slate-800 to-violet-950 px-5 py-5 sm:px-6">
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-r from-violet-500/20 via-transparent to-fuchsia-500/10"
+            aria-hidden
+          />
+          <div className="relative min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-violet-100/85">Bulandi 2026</p>
+            <h2 id="bulandi-reg-drawer-title" className="mt-1 text-xl font-black tracking-tight text-white">
+              Registration
+            </h2>
+            <p className="mt-1 text-xs font-medium leading-snug text-violet-100/90">
+              Secure your spot — complete all required fields.
+            </p>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-gray-600 hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="relative shrink-0 rounded-full p-2 text-white/90 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
             aria-label="Close registration form"
           >
             <X size={22} />
@@ -199,12 +209,12 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5 space-y-4">
             <div
-              className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-950 shadow-sm"
+              className="rounded-2xl border border-violet-200/80 bg-violet-50/90 px-4 py-3.5 text-sm text-violet-950 shadow-sm backdrop-blur-sm"
               role="note"
               aria-label="Registration eligibility"
             >
-              <p className="font-bold text-amber-950">Disclaimer — who may register</p>
-              <p className="mt-2 leading-relaxed text-amber-950/95">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-violet-900/90">Eligibility</p>
+              <p className="mt-2 leading-relaxed text-violet-950/95">
                 <span className="font-semibold">TKPP Maheshwaris only.</span> Registration is intended for
                 Maheshwaris in <span className="font-semibold">Tamil Nadu</span>,{' '}
                 <span className="font-semibold">Kerala</span>, and{' '}
@@ -215,7 +225,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
 
             <div>
               <label htmlFor="bulandi-reg-name" className="block text-sm font-semibold text-gray-800">
-                Name <span className="text-red-600">*</span>
+                Name <span className="text-violet-600">*</span>
               </label>
               <input
                 id="bulandi-reg-name"
@@ -228,15 +238,15 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   applyFieldError('name', v);
                 }}
                 onBlur={(e) => applyFieldError('name', e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.name ? 'true' : 'false'}
               />
-              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+              {errors.name && <p className="mt-1 text-xs text-violet-600">{errors.name}</p>}
             </div>
 
             <div>
               <label htmlFor="bulandi-reg-father-name" className="block text-sm font-semibold text-gray-800">
-                Father&apos;s name <span className="text-red-600">*</span>
+                Father&apos;s name <span className="text-violet-600">*</span>
               </label>
               <input
                 id="bulandi-reg-father-name"
@@ -249,15 +259,15 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   applyFieldError('fatherName', v);
                 }}
                 onBlur={(e) => applyFieldError('fatherName', e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.fatherName ? 'true' : 'false'}
               />
-              {errors.fatherName && <p className="mt-1 text-xs text-red-600">{errors.fatherName}</p>}
+              {errors.fatherName && <p className="mt-1 text-xs text-violet-600">{errors.fatherName}</p>}
             </div>
 
             <div>
               <label htmlFor="bulandi-reg-phone" className="block text-sm font-semibold text-gray-800">
-                Phone (WhatsApp only) <span className="text-red-600">*</span>
+                Phone (WhatsApp only) <span className="text-violet-600">*</span>
               </label>
               <input
                 id="bulandi-reg-phone"
@@ -273,10 +283,10 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   applyFieldError('phone', v);
                 }}
                 onBlur={(e) => applyFieldError('phone', e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm tabular-nums focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm tabular-nums shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.phone ? 'true' : 'false'}
               />
-              {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+              {errors.phone && <p className="mt-1 text-xs text-violet-600">{errors.phone}</p>}
             </div>
 
             <div>
@@ -297,15 +307,15 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   applyFieldError('phoneAlt', v);
                 }}
                 onBlur={(e) => applyFieldError('phoneAlt', e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm tabular-nums focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm tabular-nums shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.phoneAlt ? 'true' : 'false'}
               />
-              {errors.phoneAlt && <p className="mt-1 text-xs text-red-600">{errors.phoneAlt}</p>}
+              {errors.phoneAlt && <p className="mt-1 text-xs text-violet-600">{errors.phoneAlt}</p>}
             </div>
 
             <div>
               <label htmlFor="bulandi-reg-gender" className="block text-sm font-semibold text-gray-800">
-                Gender <span className="text-red-600">*</span>
+                Gender <span className="text-violet-600">*</span>
               </label>
               <select
                 id="bulandi-reg-gender"
@@ -316,7 +326,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   applyFieldError('gender', v);
                 }}
                 onBlur={(e) => applyFieldError('gender', e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.gender ? 'true' : 'false'}
               >
                 {GENDER_OPTIONS.map((opt) => (
@@ -325,12 +335,12 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   </option>
                 ))}
               </select>
-              {errors.gender && <p className="mt-1 text-xs text-red-600">{errors.gender}</p>}
+              {errors.gender && <p className="mt-1 text-xs text-violet-600">{errors.gender}</p>}
             </div>
 
             <div>
               <label htmlFor="bulandi-reg-dob" className="block text-sm font-semibold text-gray-800">
-                Date of birth <span className="text-red-600">*</span>
+                Date of birth <span className="text-violet-600">*</span>
               </label>
               <input
                 id="bulandi-reg-dob"
@@ -348,15 +358,15 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   if (v !== e.target.value.trim()) setDob(v);
                   applyFieldError('dob', v);
                 }}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.dob ? 'true' : 'false'}
               />
-              {errors.dob && <p className="mt-1 text-xs text-red-600">{errors.dob}</p>}
+              {errors.dob && <p className="mt-1 text-xs text-violet-600">{errors.dob}</p>}
             </div>
 
             <div>
               <label htmlFor="bulandi-reg-email" className="block text-sm font-semibold text-gray-800">
-                Email <span className="text-red-600">*</span>
+                Email <span className="text-violet-600">*</span>
               </label>
               <input
                 id="bulandi-reg-email"
@@ -369,18 +379,18 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   applyFieldError('email', v);
                 }}
                 onBlur={(e) => applyFieldError('email', e.target.value)}
-                className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="mt-1.5 w-full rounded-xl border border-slate-200/90 bg-white/90 px-3 py-2.5 text-sm shadow-sm focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
                 aria-invalid={errors.email ? 'true' : 'false'}
               />
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-xs text-violet-600">{errors.email}</p>}
             </div>
 
-            <div className="rounded-xl border-2 border-amber-200 bg-amber-50/60 p-4 space-y-3">
-              <h3 className="text-sm font-bold text-amber-950">Payment details</h3>
-              <p className="text-sm font-semibold text-amber-950/95">
+            <div className="rounded-xl border-2 border-violet-200 bg-violet-50/70 p-4 space-y-3">
+              <h3 className="text-sm font-bold text-violet-950">Payment details</h3>
+              <p className="text-sm font-semibold text-violet-950/95">
                 Registration fees: <span className="tabular-nums">₹500</span>
               </p>
-              <p className="rounded-lg bg-red-100 border border-red-200 px-3 py-2 text-xs font-bold text-red-900">
+              <p className="rounded-lg bg-fuchsia-100 border border-fuchsia-200 px-3 py-2 text-xs font-bold text-fuchsia-950">
                 No cash — pay only via bank transfer or UPI using the details below, then upload your payment screenshot.
               </p>
               <p className="text-xs text-gray-800 leading-snug">
@@ -389,7 +399,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                   href="https://wa.me/918610447053"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-red-700 underline decoration-red-400 underline-offset-2 hover:text-red-800"
+                  className="font-semibold text-violet-800 underline decoration-violet-400 underline-offset-2 hover:text-violet-950"
                 >
                   8610447053
                 </a>
@@ -413,9 +423,9 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
               </dl>
 
               <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-amber-900/90 mb-2">UPI QR</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-violet-900/90 mb-2">UPI QR</p>
                 {bulandiRegistrationUpiQrUrl?.trim() ? (
-                  <div className="flex justify-center rounded-lg bg-white p-3 border border-amber-200">
+                  <div className="flex justify-center rounded-lg bg-white p-3 border border-violet-200">
                     <img
                       src={bulandiRegistrationUpiQrUrl.trim()}
                       alt="SMYM UPI QR code for payment"
@@ -423,7 +433,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-amber-900/80 bg-white/80 rounded-lg border border-dashed border-amber-300 px-3 py-3 text-center">
+                  <p className="text-xs text-violet-900/85 bg-white/80 rounded-lg border border-dashed border-violet-300 px-3 py-3 text-center">
                     UPI QR image will appear here once added. Use bank transfer above if needed, or check SMYM updates for the UPI ID.
                   </p>
                 )}
@@ -431,7 +441,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
 
               <div>
                 <label htmlFor="bulandi-reg-payment" className="block text-sm font-semibold text-gray-800">
-                  Payment screenshot <span className="text-red-600">*</span>
+                  Payment screenshot <span className="text-violet-600">*</span>
                 </label>
                 <input
                   id="bulandi-reg-payment"
@@ -443,18 +453,18 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                     applyFieldError('paymentFile', f);
                   }}
                   onBlur={() => applyFieldError('paymentFile', paymentFile)}
-                  className="mt-1.5 block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-red-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-red-700"
+                  className="mt-1.5 block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-violet-700 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-violet-800"
                   aria-invalid={errors.paymentFile ? 'true' : 'false'}
                 />
-                {errors.paymentFile && <p className="mt-1 text-xs text-red-600">{errors.paymentFile}</p>}
+                {errors.paymentFile && <p className="mt-1 text-xs text-violet-600">{errors.paymentFile}</p>}
               </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-100 bg-white p-4 sm:p-5 shrink-0 space-y-3">
+          <div className="shrink-0 space-y-3 border-t border-slate-200/80 bg-slate-50/90 p-4 backdrop-blur-md sm:p-5">
             <div
-              className={`rounded-lg border px-3 py-3 ${
-                errors.aadharAcknowledged ? 'border-red-300 bg-red-50/80' : 'border-gray-200 bg-gray-50'
+              className={`rounded-xl border px-3 py-3 ${
+                errors.aadharAcknowledged ? 'border-fuchsia-300 bg-fuchsia-50/90' : 'border-slate-200/90 bg-white/90'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -471,7 +481,7 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                       return n;
                     });
                   }}
-                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                   aria-invalid={errors.aadharAcknowledged ? 'true' : 'false'}
                   aria-describedby={
                     errors.aadharAcknowledged ? 'bulandi-reg-aadhar-ack-error' : undefined
@@ -483,24 +493,24 @@ export function BulandiRegistrationDrawer({ open, onClose, onRegistered }) {
                 >
                   <span className="font-semibold text-gray-900">Required:</span> I will carry my{' '}
                   <span className="font-semibold">Aadhaar proof</span> on the day of the event for verification at
-                  the registration desk. <span className="text-red-600">*</span>
+                  the registration desk. <span className="text-violet-600">*</span>
                 </label>
               </div>
               {errors.aadharAcknowledged ? (
-                <p id="bulandi-reg-aadhar-ack-error" className="mt-2 text-xs text-red-700 pl-7" role="alert">
+                <p id="bulandi-reg-aadhar-ack-error" className="mt-2 text-xs text-fuchsia-900 pl-7" role="alert">
                   {errors.aadharAcknowledged}
                 </p>
               ) : null}
             </div>
             {submitError && (
-              <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
+              <p className="text-sm text-fuchsia-950 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-3 py-2" role="alert">
                 {submitError}
               </p>
             )}
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 py-3.5 text-base font-extrabold text-white shadow-lg shadow-red-600/30 transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
+              className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 py-3.5 text-base font-extrabold text-white shadow-lg shadow-violet-600/35 ring-1 ring-white/20 transition hover:brightness-[1.06] hover:shadow-xl hover:shadow-violet-600/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60"
             >
               {submitting ? 'Submitting…' : 'Submit'}
             </button>

@@ -6,8 +6,8 @@ export function SponsorPersonCard({ entry, size = 'grid' }) {
   const label = name?.trim() ? name.trim() : 'To be announced';
   const isTitle = size === 'title';
   const frameClass = isTitle
-    ? 'relative w-full max-w-[280px] mx-auto aspect-square overflow-hidden rounded-2xl border-2 border-amber-300/80 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-md ring-2 ring-amber-200/50'
-    : 'relative w-full aspect-square overflow-hidden rounded-xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-white shadow-sm';
+    ? 'relative w-full max-w-[280px] mx-auto aspect-square overflow-hidden rounded-2xl border-2 border-violet-300/80 bg-gradient-to-br from-violet-50 via-white to-fuchsia-50/90 shadow-md ring-2 ring-violet-200/55'
+    : 'relative w-full aspect-square overflow-hidden rounded-xl border border-violet-200/90 bg-gradient-to-br from-violet-50 to-white shadow-sm';
 
   const inner = (
     <div className={`flex flex-col items-center ${isTitle ? 'max-w-sm mx-auto' : ''}`}>
@@ -19,7 +19,7 @@ export function SponsorPersonCard({ entry, size = 'grid' }) {
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center px-2 text-center text-amber-700/55 text-xs sm:text-sm font-medium">
+          <div className="absolute inset-0 flex items-center justify-center px-2 text-center text-violet-600/60 text-xs sm:text-sm font-medium">
             Image coming soon
           </div>
         )}
@@ -40,7 +40,7 @@ export function SponsorPersonCard({ entry, size = 'grid' }) {
         href={websiteUrl.trim()}
         target="_blank"
         rel="noopener noreferrer"
-        className="block h-full rounded-xl outline-offset-2 transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-amber-500"
+        className="block h-full rounded-xl outline-offset-2 transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-violet-500"
       >
         {inner}
       </a>

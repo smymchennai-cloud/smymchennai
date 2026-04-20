@@ -43,7 +43,7 @@ export function BulandiSelectableEventList({
                     {event.name}
                   </span>
                   {wasOnRecord ? (
-                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full w-fit">
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wide text-violet-900 bg-violet-100 px-2 py-0.5 rounded-full w-fit">
                       Already registered
                     </span>
                   ) : null}

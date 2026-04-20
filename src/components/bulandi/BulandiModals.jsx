@@ -82,13 +82,13 @@ export function BrConfirmationModal({ brNumber, onClose }) {
         <p id="br-modal-desc" className="mt-3 text-sm text-gray-600">
           Save your Bulandi registration number for your records and for event coordination.
         </p>
-        <p className="mt-4 rounded-xl border-2 border-dashed border-red-200 bg-red-50/80 px-4 py-3 text-center font-mono text-lg font-bold tracking-wide text-red-900">
+        <p className="mt-4 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/90 px-4 py-3 text-center font-mono text-lg font-bold tracking-wide text-violet-950">
           {brNumber}
         </p>
         <button
           type="button"
           onClick={onClose}
-          className="mt-6 w-full rounded-xl bg-gradient-to-r from-red-600 to-rose-600 py-3 text-base font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+          className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 py-3 text-base font-bold text-white shadow-md shadow-violet-600/25 hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
         >
           OK
         </button>
@@ -122,7 +122,7 @@ export function EventRegistrationSuccessModal({ onClose }) {
         aria-labelledby="event-reg-success-title"
         aria-describedby="event-reg-success-desc"
       >
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-5 py-4 border-b border-emerald-100 flex items-start justify-between gap-3">
+        <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 px-5 py-4 border-b border-violet-100 flex items-start justify-between gap-3">
           <h2 id="event-reg-success-title" className="text-lg font-bold text-gray-900 pr-2">
             Thank you
           </h2>
@@ -137,10 +137,10 @@ export function EventRegistrationSuccessModal({ onClose }) {
         </div>
         <div className="p-6 sm:p-7 text-center">
           <div
-            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 ring-4 ring-emerald-50"
+            className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 ring-4 ring-fuchsia-50"
             aria-hidden
           >
-            <BadgeCheck className="h-8 w-8 text-emerald-600" strokeWidth={2.25} />
+            <BadgeCheck className="h-8 w-8 text-violet-600" strokeWidth={2.25} />
           </div>
           <p id="event-reg-success-desc" className="text-sm text-gray-600 leading-relaxed">
             Your competition choices have been saved successfully.
@@ -148,7 +148,7 @@ export function EventRegistrationSuccessModal({ onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 py-3 text-base font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+            className="mt-6 w-full rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 py-3 text-base font-bold text-white shadow-md shadow-violet-600/25 hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
           >
             Done
           </button>
