@@ -32,20 +32,20 @@ const Footer = () => {
         {/* Contact & Social Links */}
         <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 mb-6">
           <a 
-            href="tel:+919551730251" 
+            href="tel:+918610447053" 
             className="flex items-center gap-2 hover:text-orange-500 transition"
           >
             <Phone className="w-5 h-5" />
-            <span>+91 95517 30251</span>
+            <span>+91 86104 47053</span>
           </a>
           <a 
-            href="https://wa.me/916383936181" 
+            href="https://wa.me/918610447053" 
             target="_blank" 
             rel="noopener noreferrer" 
             className="flex items-center gap-2 hover:text-green-500 transition"
           >
             <WhatsAppIcon className="w-5 h-5" />
-            <span>+91 63839 36181</span>
+            <span>+91 86104 47053</span>
           </a>
           <a 
             href="mailto:smymchennai@gmail.com" 
