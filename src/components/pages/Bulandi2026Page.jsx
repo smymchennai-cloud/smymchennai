@@ -38,7 +38,6 @@ import {
 } from '../bulandi/bulandiPageConstants';
 import { SponsorPersonCard } from '../bulandi/SponsorPersonCard';
 
-/** Premium glass “hero card” for main Bulandi + workshop registration tabs (shared layout). */
 function RegistrationPromoShell({
   panelId,
   ariaLabelledBy,
@@ -53,50 +52,23 @@ function RegistrationPromoShell({
       id={panelId}
       role="tabpanel"
       aria-labelledby={ariaLabelledBy}
-      className="relative mb-10 lg:mb-12 scroll-mt-6"
+      className="mb-10 lg:mb-12 scroll-mt-6"
     >
-      <div
-        className="pointer-events-none absolute -inset-[2px] rounded-[2rem] bg-gradient-to-br from-violet-500/35 via-fuchsia-400/28 to-purple-500/32 opacity-70 blur-2xl motion-safe:animate-bulandiAmbientDrift"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/50"
-        aria-hidden
-      />
       <section
         aria-labelledby={headingId}
-        className="relative overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br from-white/85 via-white/60 to-violet-50/50 p-6 sm:p-8 lg:p-10 shadow-[0_28px_100px_-28px_rgba(15,23,42,0.35)] backdrop-blur-xl sm:rounded-[1.75rem]"
+        className="rounded-xl bg-gradient-to-br from-purple-50 to-violet-100 border-l-4 border-purple-500 shadow-lg overflow-hidden p-6 sm:p-8 lg:p-10"
       >
-        <div
-          className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-95"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -right-24 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-fuchsia-400/25 to-violet-300/22 blur-3xl"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -bottom-16 -left-16 h-52 w-52 rounded-full bg-violet-500/15 blur-3xl"
-          aria-hidden
-        />
-
-        <div className="relative">
-          <p className="text-center text-[11px] font-bold uppercase tracking-[0.32em] text-slate-500">
-            {eyebrow}
-          </p>
-          <div className="mt-4 w-full text-center px-1">
-            <h2
-              id={headingId}
-              className="text-[clamp(1.75rem,5vw,3.5rem)] font-black tracking-tight leading-[1.08]"
-            >
-              <span className="text-slate-900">{titlePrimary}</span>{' '}
-              <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent bg-[length:200%_auto] motion-safe:animate-bulandiTitleGradient">
-                {titleAccent}
-              </span>
-            </h2>
-          </div>
-          <div className="relative mt-8">{children}</div>
-        </div>
+        <p className="text-center text-xs font-bold uppercase tracking-widest text-purple-600 mb-4">
+          {eyebrow}
+        </p>
+        <h2
+          id={headingId}
+          className="text-center text-3xl sm:text-4xl font-bold text-gray-800 mb-8"
+        >
+          {titlePrimary}{' '}
+          <span className="text-purple-700">{titleAccent}</span>
+        </h2>
+        {children}
       </section>
     </div>
   );
@@ -192,7 +164,7 @@ const Bulandi2026Page = () => {
       let msg = e?.message || 'Could not verify.';
       if (e?.name === 'TypeError' || /failed to fetch|network|load failed/i.test(String(msg))) {
         msg =
-          'Could not reach the Bulandi web app (often CORS). For production: Apps Script → Deploy → Web app → set “Who has access” to Anyone (including anonymous), then New version → Deploy. Open your /exec URL in a private window — it must not ask for Google sign-in. Local dev: use npm start (uses a dev-server proxy).';
+          'Could not reach the Bulandi web app (often CORS). For production: Apps Script → Deploy → Web app → set "Who has access" to Anyone (including anonymous), then New version → Deploy. Open your /exec URL in a private window — it must not ask for Google sign-in. Local dev: use npm start (uses a dev-server proxy).';
       }
       setEventRegError(msg);
       setEventRegAgeBucket(null);
@@ -247,7 +219,7 @@ const Bulandi2026Page = () => {
       let msg = e?.message || 'Could not save your choices.';
       if (e?.name === 'TypeError' || /failed to fetch|network|load failed/i.test(String(msg))) {
         msg =
-          'Could not reach the Bulandi web app. Check deployment (“Anyone” access), URL in bulandi2026Data.js, and use npm start for local dev (proxy).';
+          'Could not reach the Bulandi web app. Check deployment ("Anyone" access), URL in bulandi2026Data.js, and use npm start for local dev (proxy).';
       }
       setEventRegSubmitError(msg);
     } finally {
@@ -268,20 +240,11 @@ const Bulandi2026Page = () => {
   };
 
   return (
-    <div className="relative isolate min-h-screen overflow-x-hidden py-8 sm:py-10 px-4 sm:px-6 lg:px-10 pb-16">
-      {/* Absolute (not fixed) + isolate keeps the layer painting behind content reliably */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
-        <div
-          className="absolute inset-0 w-full h-full bg-cover bg-center blur-sm scale-105"
-          style={{ backgroundImage: 'url(/bulandi-bg.png)' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-50/85 via-white/78 to-fuchsia-50/75" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto w-full">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 py-8 sm:py-10 px-4 sm:px-6 lg:px-10 pb-16">
+      <div className="max-w-7xl mx-auto w-full">
         <a
           href="/"
-          className="inline-flex items-center gap-2 text-violet-900 hover:text-violet-950 font-semibold mb-6 lg:mb-8"
+          className="inline-flex items-center gap-2 text-purple-700 hover:text-purple-900 font-semibold mb-6 lg:mb-8"
         >
           <ArrowLeft size={18} />
           Back to Home
@@ -291,13 +254,13 @@ const Bulandi2026Page = () => {
           <img
             src="/bulandi-header.png"
             alt="Bulandi 2026"
-            className="w-full max-h-[min(280px,40vw)] sm:max-h-[min(320px,36vw)] lg:max-h-[380px] object-contain object-center mx-auto rounded-2xl shadow-xl shadow-violet-900/15 ring-2 ring-violet-300/70 bg-white/30"
+            className="w-full max-h-[min(280px,40vw)] sm:max-h-[min(320px,36vw)] lg:max-h-[380px] object-contain object-center mx-auto rounded-xl shadow-lg"
             decoding="async"
           />
         </header>
 
         <nav
-          className="mb-8 lg:mb-10 rounded-2xl border-2 border-violet-200/80 bg-white/55 backdrop-blur-sm p-2 sm:p-2.5 shadow-md shadow-violet-900/8"
+          className="mb-8 lg:mb-10 rounded-xl border border-purple-200 bg-white p-2 sm:p-2.5 shadow-md"
           aria-label="Bulandi page sections"
         >
           <div
@@ -317,10 +280,10 @@ const Bulandi2026Page = () => {
                   aria-controls={tab.id}
                   tabIndex={0}
                   onClick={() => activateBulandiTab(tab.id)}
-                  className={`min-h-[48px] rounded-xl px-4 py-3 text-center text-sm sm:text-base font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
+                  className={`min-h-[48px] rounded-lg px-4 py-3 text-center text-sm sm:text-base font-bold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 ${
                     selected
-                      ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-lg shadow-violet-600/35'
-                      : 'bg-white/80 text-violet-950 hover:bg-violet-50/90 border border-transparent hover:border-violet-200/80'
+                      ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-lg'
+                      : 'bg-white text-purple-900 hover:bg-purple-50 border border-transparent hover:border-purple-200'
                   }`}
                 >
                   {tab.label}
@@ -335,11 +298,11 @@ const Bulandi2026Page = () => {
           id="sponsors"
           role="tabpanel"
           aria-labelledby="bulandi-tab-sponsors sponsors-heading"
-          className="mb-10 lg:mb-12 rounded-2xl border-2 border-violet-200/90 bg-gradient-to-br from-violet-50/90 via-white to-fuchsia-50/78 p-5 sm:p-6 lg:p-8 shadow-lg shadow-violet-900/10 scroll-mt-6"
+          className="mb-10 lg:mb-12 rounded-xl bg-gradient-to-br from-purple-50 to-violet-100 border-l-4 border-purple-500 p-5 sm:p-6 lg:p-8 shadow-lg scroll-mt-6"
         >
           <div className="flex items-center gap-3 mb-2">
-            <Handshake className="w-9 h-9 text-violet-700 shrink-0" strokeWidth={2} aria-hidden />
-            <h2 id="sponsors-heading" className="text-2xl lg:text-3xl font-bold text-gray-900">
+            <Handshake className="w-9 h-9 text-purple-700 shrink-0" strokeWidth={2} aria-hidden />
+            <h2 id="sponsors-heading" className="text-2xl lg:text-3xl font-bold text-gray-800">
               Sponsors
             </h2>
           </div>
@@ -349,14 +312,14 @@ const Bulandi2026Page = () => {
 
           <div className="space-y-12 lg:space-y-14">
             <div>
-              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-violet-900/85 mb-5">
+              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest text-purple-800 mb-5">
                 Title sponsor
               </h3>
               <SponsorPersonCard entry={bulandiTitleSponsor} size="title" />
             </div>
 
             <div>
-              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-violet-800/90 mb-5">
+              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest text-purple-700 mb-5">
                 Platinum sponsors
               </h3>
               <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
@@ -369,7 +332,7 @@ const Bulandi2026Page = () => {
             </div>
 
             <div>
-              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-violet-900/78 mb-5">
+              <h3 className="text-center text-xs sm:text-sm font-bold uppercase tracking-widest text-purple-800 mb-5">
                 Gold sponsors
               </h3>
               <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -394,43 +357,38 @@ const Bulandi2026Page = () => {
           titleAccent="Registration"
         >
           <div className="w-full text-left">
-            <p className="text-slate-700 text-base sm:text-lg leading-relaxed font-medium">
+            <p className="text-gray-700 text-base sm:text-lg leading-relaxed font-medium">
               Complete the{' '}
-              <strong className="font-bold text-slate-900">main Bulandi 2026 registration</strong> first. It is{' '}
-              <strong className="font-bold text-violet-700">required</strong> for anyone taking part in competitions or
+              <strong className="font-bold text-gray-900">main Bulandi 2026 registration</strong> first. It is{' '}
+              <strong className="font-bold text-purple-700">required</strong> for anyone taking part in competitions or
               activities on this page. After that, use each event&apos;s{' '}
-              <strong className="font-bold text-slate-900">Register</strong> link when it opens for that competition.
+              <strong className="font-bold text-gray-900">Register</strong> link when it opens for that competition.
             </p>
 
             <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch">
               <button
                 type="button"
                 onClick={() => setRegistrationDrawerOpen(true)}
-                className="group relative flex min-h-[52px] flex-1 min-w-[min(100%,14rem)] items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-4 text-center text-base font-extrabold text-white shadow-lg shadow-violet-600/35 ring-1 ring-white/25 transition duration-200 hover:brightness-[1.06] hover:shadow-xl hover:shadow-violet-600/45 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white/80 sm:min-w-[12rem] sm:text-lg"
+                className="flex min-h-[52px] flex-1 min-w-[min(100%,14rem)] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-4 text-center text-base font-extrabold text-white shadow-md hover:brightness-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 sm:min-w-[12rem] sm:text-lg"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden />
-                <span className="relative">Bulandi registration</span>
-                <ChevronRight
-                  className="relative h-5 w-5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
-                  strokeWidth={2.75}
-                  aria-hidden
-                />
+                <span>Bulandi registration</span>
+                <ChevronRight className="h-5 w-5 shrink-0" strokeWidth={2.75} aria-hidden />
               </button>
 
               <button
                 type="button"
                 onClick={handleDownloadEventRulebook}
                 disabled={eventRulebookDownloading}
-                className="group flex min-h-[52px] flex-1 min-w-[min(100%,14rem)] items-center justify-center gap-2 rounded-2xl border border-slate-200/90 bg-white/90 px-6 py-4 text-center text-base font-bold text-slate-900 shadow-sm backdrop-blur-sm transition duration-200 hover:border-violet-300/80 hover:bg-white hover:shadow-md hover:shadow-violet-500/10 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:min-w-[12rem] sm:text-lg"
+                className="flex min-h-[52px] flex-1 min-w-[min(100%,14rem)] items-center justify-center gap-2 rounded-lg border border-purple-200 bg-white px-6 py-4 text-center text-base font-bold text-gray-800 shadow-sm hover:bg-purple-50 hover:border-purple-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 sm:min-w-[12rem] sm:text-lg"
               >
                 {eventRulebookDownloading ? (
                   <>
-                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-violet-600" aria-hidden />
+                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-purple-600" aria-hidden />
                     Preparing PDF…
                   </>
                 ) : (
                   <>
-                    <FileDown className="h-5 w-5 shrink-0 text-violet-600" strokeWidth={2.5} aria-hidden />
+                    <FileDown className="h-5 w-5 shrink-0 text-purple-600" strokeWidth={2.5} aria-hidden />
                     Event rulebook (PDF)
                   </>
                 )}
@@ -441,18 +399,14 @@ const Bulandi2026Page = () => {
                   href={bulandi2026Meta.scheduleUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex min-h-[52px] flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-slate-200/90 bg-white/90 px-6 py-4 text-center text-base font-bold text-slate-900 no-underline shadow-sm backdrop-blur-sm transition duration-200 hover:border-violet-300/80 hover:bg-white hover:shadow-md hover:shadow-violet-500/10 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 sm:text-lg"
+                  className="flex min-h-[52px] flex-1 min-w-0 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-white px-6 py-4 text-center text-base font-bold text-gray-800 no-underline shadow-sm hover:bg-purple-50 hover:border-purple-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 sm:text-lg"
                 >
                   View schedule
-                  <ChevronRight
-                    className="h-5 w-5 shrink-0 text-violet-600 transition-transform duration-200 group-hover:translate-x-0.5"
-                    strokeWidth={2.75}
-                    aria-hidden
-                  />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-purple-600" strokeWidth={2.75} aria-hidden />
                 </a>
               ) : (
                 <span
-                  className="flex min-h-[52px] flex-1 min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300/90 bg-slate-50/80 px-6 py-4 text-center text-base font-bold text-slate-500 sm:text-lg"
+                  className="flex min-h-[52px] flex-1 min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-4 text-center text-base font-bold text-gray-400 sm:text-lg"
                   role="status"
                 >
                   Schedule — coming soon
@@ -461,8 +415,8 @@ const Bulandi2026Page = () => {
             </div>
 
             {!bulandi2026Meta.scheduleUrl && (
-              <p className="mt-5 text-sm font-semibold leading-relaxed text-slate-600 sm:text-base">
-                <span className="bg-gradient-to-r from-violet-700 via-fuchsia-600 to-purple-700 bg-clip-text text-transparent">
+              <p className="mt-5 text-sm font-semibold leading-relaxed text-gray-600 sm:text-base">
+                <span className="text-purple-700">
                   Event schedule will be posted here soon
                 </span>{' '}
                 — follow SMYM updates.
@@ -479,25 +433,25 @@ const Bulandi2026Page = () => {
           aria-labelledby="bulandi-tab-event-registration event-registration-heading"
           className="scroll-mt-6 mb-10 lg:mb-12"
         >
-          <h2 id="event-registration-heading" className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+          <h2 id="event-registration-heading" className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
             Event Registration
           </h2>
           <p className="w-full text-sm sm:text-base text-gray-600 mb-6 lg:mb-8">
             If you have registered for Bulandi, you can find your <strong>B number</strong> (Bulandi registration ID)
             in your registration confirmation email. Enter your B number and <strong>date of birth</strong>, tap{' '}
             <strong>Validate details</strong>, then pick competitions and <strong>Submit</strong>. Use{' '}
-            <strong>Rules and regulations</strong> on a row for that event’s full rules.
+            <strong>Rules and regulations</strong> on a row for that event's full rules.
           </p>
 
-          <div className="mb-8 lg:mb-10 rounded-2xl border-2 border-violet-200/80 bg-white/70 backdrop-blur-sm p-4 sm:p-5 shadow-md">
+          <div className="mb-8 lg:mb-10 rounded-xl border border-purple-200 bg-white p-4 sm:p-5 shadow-md">
             <h3 className="text-base font-bold text-gray-900 mb-3 flex flex-wrap items-center gap-2">
-              <BadgeCheck className="w-5 h-5 text-violet-600 shrink-0" aria-hidden />
+              <BadgeCheck className="w-5 h-5 text-purple-600 shrink-0" aria-hidden />
               Your details
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3">
               <div>
                 <label htmlFor="bulandi-event-reg-br" className="block text-xs font-semibold text-gray-700 mb-1">
-                  B number <span className="text-violet-600">*</span>
+                  B number <span className="text-purple-600">*</span>
                 </label>
                 <input
                   id="bulandi-event-reg-br"
@@ -506,29 +460,29 @@ const Bulandi2026Page = () => {
                   placeholder="e.g. B1511"
                   value={eventRegBr}
                   onChange={(e) => setEventRegBr(e.target.value)}
-                  className="w-full rounded-lg border border-violet-200 px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200"
+                  className="w-full rounded-lg border border-purple-200 px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
               </div>
               <div>
                 <label htmlFor="bulandi-event-reg-dob" className="block text-xs font-semibold text-gray-700 mb-1">
-                  Date of birth <span className="text-violet-600">*</span>
+                  Date of birth <span className="text-purple-600">*</span>
                 </label>
                 <input
                   id="bulandi-event-reg-dob"
                   type="date"
                   value={eventRegDob}
                   onChange={(e) => setEventRegDob(e.target.value)}
-                  className="w-full rounded-lg border border-violet-200 px-3 py-2.5 text-sm focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200"
+                  className="w-full rounded-lg border border-purple-200 px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200"
                 />
               </div>
             </div>
             {eventRegError && (
-              <p className="mb-3 text-sm text-fuchsia-950 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-3 py-2" role="alert">
+              <p className="mb-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
                 {eventRegError}
               </p>
             )}
             {eventRegVerifyState === 'ok' && eventRegAgeBucket && (
-              <p className="mb-3 text-sm text-violet-950 bg-violet-100 border border-violet-200 rounded-lg px-3 py-2 flex items-start gap-2">
+              <p className="mb-3 text-sm text-purple-900 bg-purple-100 border border-purple-200 rounded-lg px-3 py-2 flex items-start gap-2">
                 <BadgeCheck className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
                 <span>
                   Details validated. Competitions you already signed up for are pre-selected. Adjust your choices
@@ -540,7 +494,7 @@ const Bulandi2026Page = () => {
               type="button"
               onClick={handleEventRegVerify}
               disabled={eventRegVerifyState === 'loading'}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-600/25 hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
             >
               {eventRegVerifyState === 'loading' ? (
                 <>
@@ -557,8 +511,8 @@ const Bulandi2026Page = () => {
           </div>
 
           {eventRegVerifyState === 'ok' && eventRegAgeBucket ? (
-            <section className="w-full min-w-0 rounded-2xl border-2 border-violet-200/80 bg-white/70 backdrop-blur-sm p-4 sm:p-5 shadow-md z-[1]">
-              <header className="mb-3 pb-3 border-b border-violet-200/60">
+            <section className="w-full min-w-0 rounded-xl border border-purple-200 bg-white p-4 sm:p-5 shadow-md">
+              <header className="mb-3 pb-3 border-b border-purple-200">
                 <h3 className="text-base font-bold text-gray-900 mb-3 flex flex-wrap items-center gap-2">
                   <Trophy
                     className={`w-5 h-5 shrink-0 ${eventRegAgeBucket === 'under15' ? 'text-fuchsia-600' : 'text-purple-600'}`}
@@ -568,8 +522,8 @@ const Bulandi2026Page = () => {
                   <span
                     className={`text-xs font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
                       eventRegAgeBucket === 'under15'
-                        ? 'text-fuchsia-950 bg-fuchsia-100'
-                        : 'text-purple-950 bg-purple-100'
+                        ? 'text-fuchsia-900 bg-fuchsia-100'
+                        : 'text-purple-900 bg-purple-100'
                     }`}
                   >
                     Your competitions
@@ -594,9 +548,9 @@ const Bulandi2026Page = () => {
                 setRulesEvent={setRulesEvent}
                 setEventRegSuccessModalOpen={setEventRegSuccessModalOpen}
               />
-              <div className="mt-6 pt-5 border-t border-violet-200/80">
+              <div className="mt-6 pt-5 border-t border-purple-200">
                 {eventRegSubmitError && (
-                  <p className="mb-3 text-sm text-fuchsia-950 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-3 py-2" role="alert">
+                  <p className="mb-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg px-3 py-2" role="alert">
                     {eventRegSubmitError}
                   </p>
                 )}
@@ -604,7 +558,7 @@ const Bulandi2026Page = () => {
                   type="button"
                   onClick={handleEventChoiceSubmit}
                   disabled={eventRegSubmitting}
-                  className="inline-flex w-full sm:w-auto min-w-[200px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-violet-600/25 hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
+                  className="inline-flex w-full sm:w-auto min-w-[200px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-md hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 disabled:opacity-60 disabled:pointer-events-none"
                 >
                   {eventRegSubmitting ? (
                     <>
@@ -618,7 +572,7 @@ const Bulandi2026Page = () => {
               </div>
             </section>
           ) : (
-            <div className="w-full rounded-2xl border border-dashed border-violet-200/90 bg-violet-50/40 px-4 py-8 sm:px-6 text-center">
+            <div className="w-full rounded-xl border border-dashed border-purple-200 bg-purple-50/40 px-4 py-8 sm:px-6 text-center">
               <p className="text-sm text-gray-600 leading-relaxed">
                 Enter your details above and tap <strong className="font-semibold text-gray-800">Validate details</strong>{' '}
                 to choose competitions.
@@ -638,10 +592,10 @@ const Bulandi2026Page = () => {
           titleAccent="Registration"
         >
           <div className="w-full text-left">
-            <p className="text-slate-700 text-base sm:text-lg leading-relaxed font-medium">
-              Complete the <strong className="font-bold text-slate-900">main Bulandi 2026 registration</strong> first.
-              It is <strong className="font-bold text-violet-700">required</strong> for anyone attending Bulandi
-              workshops. After that, use <strong className="font-bold text-slate-900">Workshop registration</strong>{' '}
+            <p className="text-gray-700 text-base sm:text-lg leading-relaxed font-medium">
+              Complete the <strong className="font-bold text-gray-900">main Bulandi 2026 registration</strong> first.
+              It is <strong className="font-bold text-purple-700">required</strong> for anyone attending Bulandi
+              workshops. After that, use <strong className="font-bold text-gray-900">Workshop registration</strong>{' '}
               when it opens for the session you want to join.
             </p>
 
@@ -651,19 +605,14 @@ const Bulandi2026Page = () => {
                   href={bulandi2026Meta.workshopRegistrationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative flex min-h-[52px] flex-1 min-w-0 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-4 text-center text-base font-extrabold text-white no-underline shadow-lg shadow-violet-600/35 ring-1 ring-white/25 transition duration-200 hover:brightness-[1.06] hover:shadow-xl hover:shadow-violet-600/45 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white/80 sm:text-lg"
+                  className="flex min-h-[52px] flex-1 min-w-0 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-4 text-center text-base font-extrabold text-white no-underline shadow-md hover:brightness-105 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 sm:text-lg"
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden />
-                  <span className="relative">Register for workshops</span>
-                  <ChevronRight
-                    className="relative h-5 w-5 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
-                    strokeWidth={2.75}
-                    aria-hidden
-                  />
+                  <span>Register for workshops</span>
+                  <ChevronRight className="h-5 w-5 shrink-0" strokeWidth={2.75} aria-hidden />
                 </a>
               ) : (
                 <span
-                  className="flex min-h-[52px] flex-1 min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300/90 bg-slate-50/90 px-6 py-4 text-center text-base font-bold text-slate-500 sm:text-lg"
+                  className="flex min-h-[52px] flex-1 min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-4 text-center text-base font-bold text-gray-400 sm:text-lg"
                   role="status"
                 >
                   Workshop link — opening soon
@@ -676,18 +625,14 @@ const Bulandi2026Page = () => {
                   href={bulandi2026Meta.scheduleUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex min-h-[52px] flex-1 min-w-0 items-center justify-center gap-2 rounded-2xl border border-slate-200/90 bg-white/90 px-6 py-4 text-center text-base font-bold text-slate-900 no-underline shadow-sm backdrop-blur-sm transition duration-200 hover:border-violet-300/80 hover:bg-white hover:shadow-md hover:shadow-violet-500/10 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 sm:text-lg"
+                  className="flex min-h-[52px] flex-1 min-w-0 items-center justify-center gap-2 rounded-lg border border-purple-200 bg-white px-6 py-4 text-center text-base font-bold text-gray-800 no-underline shadow-sm hover:bg-purple-50 hover:border-purple-300 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 sm:text-lg"
                 >
                   View schedule
-                  <ChevronRight
-                    className="h-5 w-5 shrink-0 text-violet-600 transition-transform duration-200 group-hover:translate-x-0.5"
-                    strokeWidth={2.75}
-                    aria-hidden
-                  />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-purple-600" strokeWidth={2.75} aria-hidden />
                 </a>
               ) : (
                 <span
-                  className="flex min-h-[52px] flex-1 min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300/90 bg-slate-50/80 px-6 py-4 text-center text-base font-bold text-slate-500 sm:text-lg"
+                  className="flex min-h-[52px] flex-1 min-w-0 cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-6 py-4 text-center text-base font-bold text-gray-400 sm:text-lg"
                   role="status"
                 >
                   Schedule — coming soon
@@ -696,24 +641,24 @@ const Bulandi2026Page = () => {
             </div>
 
             {!bulandi2026Meta.workshopRegistrationUrl && !bulandi2026Meta.scheduleUrl && (
-              <p className="mt-5 text-sm font-semibold leading-relaxed text-slate-600 sm:text-base">
-                <span className="bg-gradient-to-r from-violet-700 via-fuchsia-600 to-purple-700 bg-clip-text text-transparent">
+              <p className="mt-5 text-sm font-semibold leading-relaxed text-gray-600 sm:text-base">
+                <span className="text-purple-700">
                   Workshop registration and schedule links
                 </span>{' '}
                 will appear here soon — follow SMYM updates.
               </p>
             )}
             {!bulandi2026Meta.workshopRegistrationUrl && bulandi2026Meta.scheduleUrl && (
-              <p className="mt-5 text-sm font-semibold leading-relaxed text-slate-600 sm:text-base">
-                <span className="bg-gradient-to-r from-violet-700 via-fuchsia-600 to-purple-700 bg-clip-text text-transparent">
+              <p className="mt-5 text-sm font-semibold leading-relaxed text-gray-600 sm:text-base">
+                <span className="text-purple-700">
                   Workshop registration opens soon
                 </span>{' '}
                 — schedule is available above.
               </p>
             )}
             {bulandi2026Meta.workshopRegistrationUrl && !bulandi2026Meta.scheduleUrl && (
-              <p className="mt-5 text-sm font-semibold text-slate-600 sm:text-base">
-                <span className="bg-gradient-to-r from-violet-700 via-fuchsia-600 to-purple-700 bg-clip-text text-transparent">
+              <p className="mt-5 text-sm font-semibold text-gray-600 sm:text-base">
+                <span className="text-purple-700">
                   Full event schedule
                 </span>{' '}
                 will be posted here soon.
